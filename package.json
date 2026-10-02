@@ -1,0 +1,46 @@
+{
+  "name": "pixi-course-ru",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "vendor": "node scripts/copy-vendor.mjs",
+    "predev": "npm run vendor",
+    "dev": "vite",
+    "prebuild": "npm run vendor",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc",
+    "validate": "node scripts/validate-content.mjs && tsc -p tsconfig.content.json",
+    "reference": "node scripts/fetch-reference.mjs",
+    "assets": "node scripts/build-assets.mjs",
+    "e2e:dir": "node tools/e2e/run-dir.mjs",
+    "e2e:chapter": "node tools/e2e/run-chapter.mjs"
+  },
+  "dependencies": {
+    "es-module-lexer": "^3.0.2",
+    "markdown-it": "^15.0.2",
+    "markdown-it-container": "^4.0.0",
+    "monaco-editor": "^0.57.0",
+    "pixi.js": "^8.22.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-resizable-panels": "^4.14.2",
+    "react-router": "^7.18.4",
+    "shiki": "^4.5.0",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@assetpack/core": "^1.7.0",
+    "@types/markdown-it": "^14.2.0",
+    "@types/markdown-it-container": "^4.0.1",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "esbuild": "^0.28.2",
+    "puppeteer-core": "^24.43.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2"
+  }
+}

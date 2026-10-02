@@ -1,0 +1,123 @@
+{
+  "bundles": [
+    {
+      "name": "default",
+      "assets": []
+    },
+    {
+      "name": "common",
+      "assets": [
+        {
+          "alias": [
+            "common/common-atlas",
+            "common-atlas"
+          ],
+          "src": [
+            "common/common-atlas-Yi5FzA@0.5x.png.json",
+            "common/common-atlas-q_rt6w@0.5x.webp.json",
+            "common/common-atlas-ni4t6w.png.json",
+            "common/common-atlas-jtIR.webp.json"
+          ],
+          "data": {
+            "tags": {
+              "m": true,
+              "tps": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "game",
+      "assets": [
+        {
+          "alias": [
+            "game/game-atlas",
+            "game-atlas"
+          ],
+          "src": [
+            "game/game-atlas-UrItXg.webp.json",
+            "game/game-atlas-LSB_aA@0.5x.png.json",
+            "game/game-atlas-kbiIAw@0.5x.webp.json",
+            "game/game-atlas-GiSyaw.png.json"
+          ],
+          "data": {
+            "tags": {
+              "m": true,
+              "tps": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "home",
+      "assets": [
+        {
+          "alias": [
+            "home/home-atlas",
+            "home-atlas"
+          ],
+          "src": [
+            "home/home-atlas-yOJuqQ.webp.json",
+            "home/home-atlas-Que4.png.json",
+            "home/home-atlas-q3aF2Q@0.5x.webp.json",
+            "home/home-atlas-aIG_@0.5x.png.json"
+          ],
+          "data": {
+            "tags": {
+              "m": true,
+              "tps": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "preload",
+      "assets": [
+        {
+          "alias": [
+            "preload/preload-atlas",
+            "preload-atlas"
+          ],
+          "src": [
+            "preload/preload-atlas-qvhyew@0.5x.png.json",
+            "preload/preload-atlas-nrai0Q.webp.json",
+            "preload/preload-atlas-lt2RcA.png.json",
+            "preload/preload-atlas-jIXP0Q@0.5x.webp.json"
+          ],
+          "data": {
+            "tags": {
+              "m": true,
+              "tps": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "result",
+      "assets": [
+        {
+          "alias": [
+            "result/result-atlas",
+            "result-atlas"
+          ],
+          "src": [
+            "result/result-atlas-q7Z1Ow@0.5x.webp.json",
+            "result/result-atlas-HzCGaQ@0.5x.png.json",
+            "result/result-atlas-gmcXOQ.webp.json",
+            "result/result-atlas-_UY4_g.png.json"
+          ],
+          "data": {
+            "tags": {
+              "m": true,
+              "tps": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

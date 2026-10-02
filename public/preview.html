@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Превью</title>
+    <link rel="icon" href="data:," />
+    <!-- Import map должна идти до любого модуля: через неё код ученика находит библиотеки -->
+    <script type="importmap">
+      {
+        "imports": {
+          "pixi.js": "/vendor/pixi.mjs"
+        }
+      }
+    </script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #0e0a1a;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module" src="/preview-runtime.js"></script>
+  </body>
+</html>
