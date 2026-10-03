@@ -108,6 +108,21 @@
 | rich text | форматированный текст | разные стили внутри одной надписи |
 | SDF / MSDF | SDF / MSDF | шрифт на полях расстояний, чёткий при любом масштабе |
 
+## Интерфейс
+
+| English | Русский | Комментарий |
+|---|---|---|
+| button state: default / hover / pressed | состояние кнопки: обычное / наведение / нажатие | |
+| nine-slice | девятизонное масштабирование, nine-slice (`NineSliceSprite`) | углы не растягиваются |
+| component | компонент | класс интерфейса с понятным API: `Button`, `Hud` |
+| resize | изменение размера, ресайз | |
+| layout | раскладка | расстановка элементов под размер экрана |
+| logical pixel | логический пиксель | единица `app.screen` |
+| device pixel ratio | плотность пикселей экрана (`devicePixelRatio`) | |
+| signal | сигнал | события `@pixi/ui`: `onPress.connect(...)` |
+| slider | слайдер (`Slider`) | |
+| checkbox | флажок (`CheckBox`) | |
+
 ## Игра (match-3)
 
 | English | Русский | Комментарий |

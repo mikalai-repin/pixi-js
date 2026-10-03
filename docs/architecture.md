@@ -38,6 +38,8 @@
 
 GSAP (с главы 8): **`gsap@3.15.0`** в devDependencies, точная версия. Его ESM-файлы `copy-vendor.mjs` собирает esbuild-ом в один `public/vendor/gsap.mjs`. Типы для Monaco — все `node_modules/gsap/types/**/*.d.ts` через `import.meta.glob` (`file:///node_modules/gsap/types/…`, внутри — `declare module "gsap"`); `tsc` для уроков находит их сам.
 
+`@pixi/ui` (с главы 10): **`@pixi/ui@2.4.1`** в devDependencies, точная версия. `copy-vendor.mjs` собирает `lib/index.mjs` вместе с зависимостью `tweedle.js` в `public/vendor/pixi-ui.mjs` с **`external: ['pixi.js']`**: библиотека использует ту же копию PixiJS из import map. Типы для Monaco — `node_modules/@pixi/ui/lib/**/*.d.ts` (без `stories`), точка входа `file:///node_modules/@pixi/ui/index.d.ts` с `export * from './lib/index'` и типы `tweedle.js`.
+
 Версия PixiJS: **`pixi.js@8.22.0`**, зафиксирована точно в `package.json` и `content/course.json` (оригинал требует `^8.14.1`, это совместимо). Типы для Monaco берутся из той же версии: собранный файл `node_modules/pixi.js/dist/pixi.js.d.ts` подключается как `file:///node_modules/pixi.js/index.d.ts`.
 
 ## Превью: как запускается код ученика
@@ -46,7 +48,7 @@ GSAP (с главы 8): **`gsap@3.15.0`** в devDependencies, точная ве�
 2. Пересоздаёт `<iframe src="/preview.html">`. Каждый запуск — новый iframe: полная очистка состояния, WebGL-контекст гарантированно освобождается.
 3. Через `postMessage` передаёт в iframe карту `{ "main.js": "<js>", "Piece.js": "<js>" }`.
 4. `preview.html`:
-   - содержит import map: `"pixi.js" → "/vendor/pixi.mjs"`, `"gsap" → "/vendor/gsap.mjs"` (позже — `@pixi/sound`, `@pixi/ui`);
+   - содержит import map: `"pixi.js" → "/vendor/pixi.mjs"`, `"gsap" → "/vendor/gsap.mjs"`, `"@pixi/ui" → "/vendor/pixi-ui.mjs"` (позже — `@pixi/sound`);
    - переписывает относительные импорты (`./Piece`) на blob-URL модулей с помощью `es-module-lexer` (с обходом зависимостей);
    - импортирует `main.js` как точку входа;
    - называет каждый модуль именем исходника (`//# sourceURL=Piece.ts`) и по встроенной source map переводит позиции в стеке ошибок обратно в строки `.ts`.
@@ -119,7 +121,7 @@ public/
   vendor/         — pixi.mjs и прочие библиотеки для превью
   assets/         — ассеты уроков
 scripts/
-  copy-vendor.mjs      — копирует pixi.mjs и es-module-lexer и собирает gsap.mjs в public/vendor (запускается перед dev/build)
+  copy-vendor.mjs      — копирует pixi.mjs и es-module-lexer и собирает gsap.mjs и pixi-ui.mjs в public/vendor (запускается перед dev/build)
   validate-content.mjs — проверка структуры уроков
   build-assets.mjs     — сборка ресурсов оригинала через AssetPack в public/assets/packed (+ manifest-basic.json)
   fetch-reference.mjs  — скачивание эталона open-games в reference/

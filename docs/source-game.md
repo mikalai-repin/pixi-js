@@ -64,7 +64,8 @@
 |---|---|---|
 | GSAP с кастомными кривыми | Свои твины на Ticker (8.3–8.7), затем GSAP; кривая падения `singleBounce` — своя функция вместо `CustomEase` | Гл. 8.8 — переходим на GSAP |
 | Пауза каскада (`AsyncQueue.pause`), блокировка отдельных фишек | Каскад — цикл `while` с `await`, на время хода блокируется всё поле (`Board.processing`) | Гл. 11 — пауза |
-| `@pixi/ui` для кнопок | Своя кнопка на Sprite | Гл. 10.6 |
+| `@pixi/ui` для кнопок | Своя кнопка `Button` на `NineSliceSprite`; `FancyButton` только в настройках | Гл. 10.6 |
+| Поле не масштабируется, минимальный экран под поле | Поле вписывается между полосами HUD, масштаб до 1,5 | — |
 | Spine-котёл и дракон | Статичный спрайт `white-cauldron` | Гл. 14 (необязательная) |
 | 4 спецфишки | Без спецфишек | Гл. 12, практикум (2 спецфишки) |
 | Режимы сложности | Один режим `normal` | Гл. 13.4 — настройки |
@@ -92,3 +93,8 @@
 | `navigation.ts` | `utils/navigation.ts` |
 | `Label.ts` | `ui/Label.ts` (шрифт Nunito вместо системного Arial Rounded MT Bold) |
 | Счёт, таймер, «+N», «Комбо ×N» в `main.ts` (гл. 9) | `ui/GameScore.ts` (набегающий счёт), `ui/GameTimer.ts` (мигание в последние 10 с; у нас `BitmapText`, в оригинале `Label`), `GameScreen.onMatch` + `CloudLabel` (комбо), `Match3Stats` (очки) |
+| `Button.ts` | `ui/LargeButton.ts` + `ui/SmallButton.ts` (у нас свой класс на `NineSliceSprite`, в оригинале — `FancyButton`) |
+| `SettingsPanel.ts` (`FancyButton`, `Slider`, `CheckBox`, `createIconButton`) | `popups/SettingsPopup.ts`, `ui/VolumeSlider.ts`, `ui/ImageButton.ts` (у нас слайдер скорости вместо громкости) |
+| `Hud.ts` | `ui/GameTimer.ts` + `ui/GameScore.ts` + кнопки паузы и настроек в `screens/GameScreen.ts` |
+| Стартовая панель в `main.ts` (гл. 10.2) | `ui/RoundedBox.ts` (`NineSliceSprite` из `rounded-rectangle`, тень со сдвигом) |
+| `resize()` и `layout()` в `main.ts` | `resize()` в `main.ts` (минимум 375 × 700, CSS-размер canvas) и `GameScreen.resize` |

@@ -1,4 +1,4 @@
-Документ для того, кто продолжает писать курс: человека или модели в новом чате. Здесь описан **процесс**, по которому написаны главы 1–9, проверки, которые обязательны для каждой главы, и ловушки, на которых уже обожглись. Прочитайте его целиком перед началом работы вместе с `CLAUDE.md` и `docs/writing-guide.md`.
+Документ для того, кто продолжает писать курс: человека или модели в новом чате. Здесь описан **процесс**, по которому написаны главы 1–10, проверки, которые обязательны для каждой главы, и ловушки, на которых уже обожглись. Прочитайте его целиком перед началом работы вместе с `CLAUDE.md` и `docs/writing-guide.md`.
 
 # Процесс написания главы
 
@@ -97,6 +97,13 @@ node tools/e2e/run-dir.mjs content/07-logic/08-cascade/solution   # консол
 | `HTMLText` отображается сразу | Пока текстура не готова — `Texture.EMPTY` (в замере 3 кадра, ~0,4 с); после смены текста ~2 кадра видна старая версия. Размер известен сразу (синхронный замер через DOM) |
 | `document.fonts.check('30px Nunito')` проверяет загрузку шрифта | Возвращает `true` и для неизвестного семейства; проверять `[...document.fonts]` |
 | Многострочную подсказку можно оставить светлой | Под полем светлый сиреневый фон из гл. 8.7: светлый текст там не читается, нужен тёмный (`0x3b1d70`) |
+| Кадры атласа `common` можно использовать в `NineSliceSprite` только неповёрнутыми | В нашем атласе кнопки повёрнуты (`rotated: true`) и обрезаны (`trimmed`) — и `Sprite`, и `NineSliceSprite` рисуют их правильно (проверено скриншотом) |
+| Без `app.renderer.off('resize', …)` временный объект просто «повиснет» | При следующем ресайзе — `Cannot read properties of null (reading 'copyFrom')`: слушатель двигает уничтоженный объект |
+| `autoDensity: true` подходит для схемы «минимум 375 × 700» | `autoDensity` ставит CSS-размер canvas равным **логическому**; оригинал (и мы) задаёт CSS = окно вручную |
+| Классы `@pixi/ui` в превью можно искать по `constructor.name` | В минифицированной сборке `pixi-ui.mjs` имена классов изменены; в проверках искать по свойствам (`slider1`, `onCheck`) или по порядку детей. `innerView` есть не только у `FancyButton`, но и у `CheckBox` |
+| `cellCenter` из `lib.mjs` годится для всех глав | С главы 10.4 сцена 583 × 700 сжата стилями до 500 × 600 и поле масштабировано: координаты — `toGlobal` × (`canvas.clientWidth / app.screen.width`) |
+| Счёт по центру верхней полосы помещается всегда | На телефоне (логическая ширина 394) наезжал на кнопку настроек: позиция `min(width / 2, buttonsLeft − 8 − SCORE_MAX_WIDTH / 2)` |
+| На сенсорном экране `pointerout` после касания не приходит | Приходит: `pointerover → pointerdown → pointerup → pointertap → pointerout` (эмуляция касания в Chrome), кнопка возвращается в обычное состояние |
 
 Вывод: **не доверяйте себе**. Если утверждение нельзя проверить, лучше его не писать.
 
@@ -133,7 +140,7 @@ node tools/e2e/run-chapter.mjs 07-logic           # все шаги в наст�
 - **Текстура `background`** — непрозрачный белый с зельями 245/255: на тёмной сцене прозрачность не помогает, только тонирование (`tint: 0xa58fd0`).
 - **`Assets.unloadBundle` с атласами** в 8.22 печатает безвредное предупреждение «not found in the Cache». В коде уроков — `Assets.unload('<псевдоним атласа>')`.
 
-# Фактическое состояние (после главы 9)
+# Фактическое состояние (после главы 10)
 
 ## Отличия от плана
 
@@ -146,33 +153,32 @@ node tools/e2e/run-chapter.mjs 07-logic           # все шаги в наст�
 | 7 | Как в плане; код поля вынесен в `Board.ts`, логика — в `grid.ts`, типы фишек 1..6, 0 — пусто |
 | 8 | 8.4 — функции плавности на обмене и неверном ходе (туда и обратно), падение с отскоком — в 8.5. 8.6 — `onRender` у фишек и рамки. 8.9 — `AnimatedSprite` как обратный отсчёт `num-stroke-5..1` перед игрой. Отдельного «Под капотом» нет: приоритеты, `Ticker.shared`, остановка — врезка в 8.2 |
 | 9 | Как в плане; «Под капотом» разложен по врезкам шагов. Старт главы: `playCountdown` вынесен в `countdown.ts`, `BOARD_WIDTH`/`BOARD_HEIGHT` экспортированы из `Board.ts`. Очки — своё правило (10 × длина × раунд), не как в `Match3Stats` |
+| 10 | 10.1 — «Играть» как старт игры перед отсчётом (экранов ещё нет); 10.2 — стартовая панель (как `RoundedBox`); 10.6 — слайдер **скорости игры** вместо громкости (звука ещё нет), заменил отладочные клавиши; практикум — класс `Hud`. Старт главы: бандл `common` грузится вместе с `game` |
 
-## Код игры на конец главы 9
+## Код игры на конец главы 10
 
-Файлы последнего шага (`content/09-text/07-score/solution/`):
+Файлы последнего шага (`content/10-ui/07-practice/solution/`):
 
 | Файл | Содержимое |
 |---|---|
-| `main.ts` | Как в 8.9, плюс: `Assets.load` шрифта Nunito сразу после `Assets.init`; счёт `Label` над полем (`resolution 2`, тень, набегание через `gsap.to(shownScore, { onUpdate })` и «прыжок» масштаба); таймер `BitmapText` (`BitmapFont.install('TimerFont')`, 60 с, идёт только при `!board.locked`, мигает `tint` в последние 10 с, `formatTime` с `Math.ceil`); подсказка `HTMLText` под полем (`<b>`, `<span style>`); `board.onMatch` → очки `длина × 10 × раунд`, `showPoints` («+N» взлетает из центра совпадения, добавляется в `board`), `showCombo` («Комбо ×N» в центре поля) |
-| `Board.ts` | Как в 8.9, плюс: экспорт `BOARD_WIDTH`, `BOARD_HEIGHT`; колбэк `onMatch(matches, round)` вызывается в `process` перед `popMatches` |
-| `Label.ts` | `class Label extends Text`: стиль по умолчанию (Nunito 30, белый, обводка `0x2c136c` 5, `align: center`) + переданный, якорь 0.5 |
-| `countdown.ts` | `playCountdown(parent, x, y)` из гл. 8.9 |
-| `manifest.ts` | + `FONT_URL = '/assets/fonts/nunito-extrabold.woff2'`, `FONT_FAMILY = 'Nunito'` |
-| `Piece.ts`, `tween.ts`, `Background.ts`, `grid.ts`, `LoadScreen.ts` | Без изменений с гл. 8 |
+| `main.ts` | `app.init({ resolution: Math.max(devicePixelRatio, 2) })` без `resizeTo`; `resize()` (минимум 375 × 700, CSS-размер canvas = окно, `app.renderer.resize`); загрузка (шрифт, `preload` → фон → экран загрузки → `['game', 'common']`); поле; `Hud` (`setScore`, `setTime`, `onPause`, `onSettings`, `buttonsVisible`); очки `длина × 10 × раунд`, `showPoints`/`showCombo`; время игры 60 с в тикере при `!board.locked`; подсказка `HTMLText`; `SettingsPanel` (скорость → `app.ticker.speed` + `gsap.globalTimeline.timeScale`, флажок → видимость подсказки); `layout(width, height)` на `app.renderer.on('resize')`: `hud.resize`, подсказка внизу с `wordWrapWidth`, поле в свободном месте с масштабом «вписать» ≤ 1,5; стартовая панель на `NineSliceSprite` со своим слушателем `resize` и `Button` «Играть»; отсчёт; после него `hud.buttonsVisible = true` |
+| `Hud.ts` | `HUD_HEIGHT = 80`; таймер `BitmapText` (`TimerFont`), счёт `Label` (набегание, «прыжок»), `Button` паузы, `FancyButton` настроек; `resize(width)` со сдвигом счёта от кнопок; `destroy` гасит твины; `formatTime` |
+| `Button.ts` | `Button({ text, icon, size: 'large' \| 'small', width, height })`: `NineSliceSprite` трёх состояний, `Label` или иконка, `onPress` по `pointertap` |
+| `SettingsPanel.ts` | Панель на `NineSliceSprite`, `Slider` (25–100 %, шаг 5, `onUpdate`), `CheckBox` (виды на `Graphics`), «Готово» на `FancyButton`; колбэки `onSpeedChange`, `onHintChange`, `onClose`; экспорт `createIconButton(icon)` |
+| `Board.ts`, `Label.ts`, `countdown.ts`, `Piece.ts`, `tween.ts`, `Background.ts`, `grid.ts`, `LoadScreen.ts`, `manifest.ts` | Без изменений с гл. 9 |
 
-Раскладка: счёт по центру и таймер у левого края поля на `y = board.y − BOARD_HEIGHT / 2 − 38`, подсказка на `y = board.y + BOARD_HEIGHT / 2 + 40`, кнопка паузы в правом верхнем углу экрана.
+Метки объектов для проверок: `board`, `playButton`, `startPanel`, `hud`, `pauseButton`, `settingsButton` (внутри `hud`, искать `getChildByLabel(…, true)`), `settingsPanel`.
 
-Шрифт: `public/assets/fonts/nunito-extrabold.woff2` (19 КБ, латиница + кириллица, подмножество TTF Google Fonts v32 через `pyftsubset`), лицензия `OFL.txt`, запись в `CREDITS.md`.
+Проверка главы: `node tools/e2e/checks/ch10-ui.mjs` — состояния кнопки «Играть» (имена текстур фона при наведении и нажатии), старт игры по нажатию, верный ход на масштабированном canvas, пауза, панель настроек (протяжка слайдера → `ticker.speed 0.55`, флажок, «Готово»), раскладка на 375 × 667, 500 × 600 и 1280 × 800 (масштаб поля, никто не выходит за экран), скриншоты в `tools/e2e/out/ch10-*`.
 
-Проверка главы: `node tools/e2e/checks/ch09-text.mjs` — для каждого шага подменяет `board.onMatch` и независимо считает очки (счёт на экране должен совпасть после 8 ходов), промежуточные значения набегающего счёта, число детей поля (всплывающие надписи уничтожаются), загрузка шрифта в `document.fonts`, таймер (идёт / стоит на паузе), `HTMLText`, короткий таймер 12 с (все значения и мигание).
+# Следующий шаг: глава 11 «Экраны и навигация»
 
-# Следующий шаг: глава 10 «Интерфейс и адаптивность»
+План шагов — в `course-plan.md` (11.1 интерфейс экрана, 11.2 навигация, 11.3 экран загрузки, 11.4 экран результата, 11.5 попапы и настоящая пауза, 11.6 переходы, 11.7 потеря фокуса, 11.8 таймер раунда). Что уже известно:
 
-План шагов — в `course-plan.md`. Что уже известно и продумано:
-
-- **Подготовка платформы:** подключить `@pixi/ui` (сейчас 2.4.1, в оригинале `^2.2.7`, peer `pixi.js ^8.6.2`) так же, как GSAP: devDependency с точной версией, сборка esbuild в `public/vendor/pixi-ui.mjs` с **`external: ['pixi.js']`** (иначе в превью окажутся две копии PixiJS), строка в import map, типы в Monaco (`node_modules/@pixi/ui/lib/**/*.d.ts` — проверить, как они ссылаются на `pixi.js`).
-- **Ресурсы:** кнопки `button-large`, `button-large-hover`, `button-large-press`, `button-small*` и `rounded-rectangle` — в атласе `common` (бандл `common` грузится фоново и явно перед кнопкой паузы). В оригинале `LargeButton`/`SmallButton` — `FancyButton` с тремя `NineSliceSprite`, `RoundedBox` — `NineSliceSprite` из `rounded-rectangle`. Размеры краёв (`leftWidth` и т. п.) взять из оригинала и проверить скриншотом.
-- **10.4 Ресайз:** в оригинале `resize()` в `main.ts` с минимальным размером 375 × 700 (масштабирует canvas стилями, если окно меньше) и `navigation.resize(w, h)`. У нас уже есть `app.renderer.on('resize')` для фона — расширить до раскладки поля, счёта, таймера, подсказки и паузы. Превью 500 × 600 меньше минимума 700 по высоте: проверить, как это выглядит, и решить, масштабировать ли поле.
-- **Разрешение:** в 9.4 обещано вернуться к `resolution: window.devicePixelRatio` + `autoDensity: true` в главе 10 — сделать в шаге про ресайз и проверить, как это влияет на `Text` (авто-разрешение) и `BitmapText` (глифы с `resolution: 2`).
-- **Практикум «HUD»:** логично собрать счёт, таймер и паузу из `main.ts` в класс `Hud` (или `GameScore`/`GameTimer`, как в оригинале) с методом `resize`. Это же решит долг «main.ts снова вырос».
-- **Кнопка паузы** сейчас — спрайт с `pointertap`; в 10.1–10.3 её естественно заменить своей кнопкой с состояниями, а в 10.6 — `FancyButton`.
+- **Оригинал:** `utils/navigation.ts` — интерфейс `AppScreen extends Container` с необязательными `show`, `hide`, `pause`, `resume`, `prepare`, `reset`, `update(ticker)`, `resize(w, h)`, `blur`, `focus`; конструктор экрана может иметь статическое `assetBundles` (навигация грузит бандлы перед показом). `Navigation`: `setBackground`, `showScreen`, `presentPopup`, `dismissPopup`, `resize`, `blur`, `focus`. Экраны: `LoadScreen`, `HomeScreen`, `GameScreen`, `ResultScreen`; попапы: `PausePopup`, `SettingsPopup`, `InfoPopup`. `visibilitychange` в `main.ts` вызывает `navigation.blur/focus`.
+- **Что переезжает:** почти весь `main.ts` становится `GameScreen` (поле, `Hud`, подсказка, очки, время, отсчёт). Стартовая панель → `HomeScreen` (логотип `logo-game` из бандла `home` + кнопка «Играть»). `LoadScreen` уже класс — добавить `show/hide`. `SettingsPanel` → попап настроек; пауза → `PausePopup` с затемнением и блокировкой экрана под ним.
+- **Настоящая пауза:** сейчас `board.locked` только блокирует ввод. Для паузы нужно останавливать твины GSAP (`pauseTweens`/`resumeTweens` по образцу `utils/animation.ts` или `gsap.globalTimeline.pause()`), тикер-время игры и `AnimatedSprite` отсчёта (он на `Ticker.shared`!).
+- **Конец игры (11.8):** таймер уже есть в `main.ts`; по нулю — `board.locked`, дождаться конца каскада (сделать у `Board` публичный признак процесса или промис), затем `ResultScreen` со счётом; звёзды — по `Match3Stats.caulculateGrade` (8 очков/с в оригинале, у нас другая шкала очков — пересчитать).
+- **Переходы (11.6):** `MaskTransition` оригинала — посмотреть перед шагом; fade — `gsap.to(screen, { alpha })`.
+- **Ресайз:** навигация должна передавать `resize(width, height)` текущему экрану и попапу; функция `resize()` с минимумом 375 × 700 остаётся в `main.ts`.
+- **Проверки:** координаты на сжатом canvas — как в `ch10-ui.mjs`; полный цикл Home → Game → Result удобно проверять с укороченным `GAME_TIME`.

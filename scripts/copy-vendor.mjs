@@ -31,4 +31,17 @@ buildSync({
   logLevel: 'warning',
 });
 
-console.log(`[vendor] скопировано файлов: ${files.length}, собран gsap.mjs`);
+// @pixi/ui (с главы 10): собираем вместе с зависимостью tweedle.js, а pixi.js оставляем внешним —
+// его превью берёт из import map, иначе на странице окажутся две копии PixiJS
+buildSync({
+  entryPoints: [resolve(root, 'node_modules/@pixi/ui/lib/index.mjs')],
+  bundle: true,
+  format: 'esm',
+  minify: true,
+  sourcemap: true,
+  external: ['pixi.js'],
+  outfile: resolve(out, 'pixi-ui.mjs'),
+  logLevel: 'warning',
+});
+
+console.log(`[vendor] скопировано файлов: ${files.length}, собраны gsap.mjs и pixi-ui.mjs`);

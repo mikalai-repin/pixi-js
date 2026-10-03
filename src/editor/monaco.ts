@@ -2,10 +2,18 @@ import * as monaco from 'monaco-editor';
 import EditorWorker from 'monaco-editor/editor/editor.worker.js?worker';
 import TsWorker from 'monaco-editor/language/typescript/ts.worker.js?worker';
 import pixiTypes from '../../node_modules/pixi.js/dist/pixi.js.d.ts?raw';
+import tweedleTypes from '../../node_modules/tweedle.js/index.d.ts?raw';
 import type { FileMap } from '../content/course';
 
 // Типы GSAP: набор .d.ts с /// <reference>, внутри — `declare module "gsap"`
 const gsapTypes = import.meta.glob('../../node_modules/gsap/types/**/*.d.ts', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
+// Типы @pixi/ui: файлы lib/**/*.d.ts (они импортируют 'pixi.js', который уже подключён выше) и tweedle.js для Drawer
+const pixiUiTypes = import.meta.glob(['../../node_modules/@pixi/ui/lib/**/*.d.ts', '!**/stories/**'], {
   query: '?raw',
   import: 'default',
   eager: true,
@@ -49,6 +57,12 @@ ts.typescriptDefaults.addExtraLib(pixiTypes, 'file:///node_modules/pixi.js/index
 for (const [path, source] of Object.entries(gsapTypes)) {
   ts.typescriptDefaults.addExtraLib(source, 'file:///node_modules/gsap/types/' + path.split('/gsap/types/')[1]);
 }
+for (const [path, source] of Object.entries(pixiUiTypes)) {
+  ts.typescriptDefaults.addExtraLib(source, 'file:///node_modules/@pixi/ui/lib/' + path.split('/@pixi/ui/lib/')[1]);
+}
+// Точка входа пакета: так `import { FancyButton } from '@pixi/ui'` находит типы, как и для pixi.js
+ts.typescriptDefaults.addExtraLib(`export * from './lib/index';`, 'file:///node_modules/@pixi/ui/index.d.ts');
+ts.typescriptDefaults.addExtraLib(tweedleTypes, 'file:///node_modules/tweedle.js/index.d.ts');
 ts.typescriptDefaults.addExtraLib(
   `declare var __PIXI_APP__: import('pixi.js').Application | undefined;`,
   'file:///course-globals.d.ts',
