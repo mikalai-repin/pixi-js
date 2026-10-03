@@ -13,6 +13,9 @@ const files = [
   ['node_modules/pixi.js/dist/pixi.mjs', 'pixi.mjs'],
   ['node_modules/pixi.js/dist/pixi.mjs.map', 'pixi.mjs.map'],
   ['node_modules/es-module-lexer/dist/lexer.js', 'es-module-lexer.js'],
+  // pixi-filters (с главы 12): готовая ESM-сборка уже импортирует 'pixi.js' как внешний модуль
+  ['node_modules/pixi-filters/dist/pixi-filters.mjs', 'pixi-filters.mjs'],
+  ['node_modules/pixi-filters/dist/pixi-filters.mjs.map', 'pixi-filters.mjs.map'],
 ];
 
 for (const [from, to] of files) {

@@ -3,6 +3,7 @@ import EditorWorker from 'monaco-editor/editor/editor.worker.js?worker';
 import TsWorker from 'monaco-editor/language/typescript/ts.worker.js?worker';
 import pixiTypes from '../../node_modules/pixi.js/dist/pixi.js.d.ts?raw';
 import tweedleTypes from '../../node_modules/tweedle.js/index.d.ts?raw';
+import gradientParserTypes from '../../node_modules/@types/gradient-parser/index.d.ts?raw';
 import type { FileMap } from '../content/course';
 
 // Типы GSAP: набор .d.ts с /// <reference>, внутри — `declare module "gsap"`
@@ -14,6 +15,13 @@ const gsapTypes = import.meta.glob('../../node_modules/gsap/types/**/*.d.ts', {
 
 // Типы @pixi/ui: файлы lib/**/*.d.ts (они импортируют 'pixi.js', который уже подключён выше) и tweedle.js для Drawer
 const pixiUiTypes = import.meta.glob(['../../node_modules/@pixi/ui/lib/**/*.d.ts', '!**/stories/**'], {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
+// Типы pixi-filters: lib/**/*.d.ts, а для CssGradientParser — типы gradient-parser
+const pixiFiltersTypes = import.meta.glob('../../node_modules/pixi-filters/lib/**/*.d.ts', {
   query: '?raw',
   import: 'default',
   eager: true,
@@ -63,6 +71,11 @@ for (const [path, source] of Object.entries(pixiUiTypes)) {
 // Точка входа пакета: так `import { FancyButton } from '@pixi/ui'` находит типы, как и для pixi.js
 ts.typescriptDefaults.addExtraLib(`export * from './lib/index';`, 'file:///node_modules/@pixi/ui/index.d.ts');
 ts.typescriptDefaults.addExtraLib(tweedleTypes, 'file:///node_modules/tweedle.js/index.d.ts');
+for (const [path, source] of Object.entries(pixiFiltersTypes)) {
+  ts.typescriptDefaults.addExtraLib(source, 'file:///node_modules/pixi-filters/lib/' + path.split('/pixi-filters/lib/')[1]);
+}
+ts.typescriptDefaults.addExtraLib(`export * from './lib/index';`, 'file:///node_modules/pixi-filters/index.d.ts');
+ts.typescriptDefaults.addExtraLib(gradientParserTypes, 'file:///node_modules/gradient-parser/index.d.ts');
 ts.typescriptDefaults.addExtraLib(
   `declare var __PIXI_APP__: import('pixi.js').Application | undefined;`,
   'file:///course-globals.d.ts',

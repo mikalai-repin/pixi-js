@@ -67,9 +67,12 @@
 | `@pixi/ui` для кнопок | Своя кнопка `Button` на `NineSliceSprite`; `FancyButton` только в настройках | Гл. 10.6 |
 | Поле не масштабируется, минимальный экран под поле | Поле вписывается между полосами HUD, масштаб до 1,5 | — |
 | Spine-котёл и дракон | Статичный спрайт `white-cauldron` | Гл. 14 (необязательная) |
-| 4 спецфишки | Без спецфишек | Гл. 12, практикум (2 спецфишки) |
+| 4 спецфишки (`row`, `column`, `colour`, `blast`), срабатывают по нажатию и при обмене | 2 спецфишки (`special-row`, `special-blast`), только по нажатию; цепная реакция есть | Гл. 12, практикум |
 | Режимы сложности | Один режим `normal` | Гл. 13.4 — настройки |
-| Пул объектов (в т. ч. экранов в навигации) | `new` / `destroy` | Гл. 12.4 |
+| Пул объектов `MultiPool` (`pool.get(ctor)`, фишки поля, копии, взрывы; навигация берёт экраны через `pool.get`, но обратно не сдаёт) | `Pool<T>` с функцией создания (гл. 12.4) только для эффектов: кольца, копии, искры. Фишки поля и экраны создаются заново | — |
+| Котёл (Spine), зелья летят в котёл | Зелья летят в счёт HUD (`Hud.getScorePosition`), кривые — стандартные `sine.in/out`, `back.in` вместо `CustomEase` | Гл. 14 — котёл |
+| Взрыв `PopExplosion` — 12 спрайтов на GSAP | Искры в `ParticleContainer` на тикере (гл. 12.5) | — |
+| Размытие под всеми попапами (`new BlurFilter(5)` ставит попап) | Размытие ставит сам `GameScreen` на паузе (`addFilter`), плюс выцветание поля `ColorMatrixFilter` и pixi-filters (`GlowFilter`, `ShockwaveFilter`), которых в оригинале нет | — |
 | Пауза: `pause`/`resume` у каждой фишки и `AsyncQueue.pause` | `gsap.exportRoot()` замораживает все текущие твины | — |
 | AssetPack | Готовые файлы в `public/` | Гл. 15.2 |
 | i18n | Тексты сразу на русском | Не догоняем |
@@ -106,3 +109,6 @@
 | `MaskTransition.ts` | `ui/MaskTransition.ts` (маска на экране результата, а не на контейнере навигации) |
 | `stats.ts` (`saveScore`, `getGrade`, `getBestScore` в `localStorage`) | `utils/userStats.ts`, `Match3Stats.caulculateGrade` (у нас пороги по очкам 200/600/1200) |
 | `userSettings.ts` | `utils/userSettings.ts` (без сохранения) |
+| `GameEffects.ts` (слой `vfx`: кольцо, полёт к счёту, искры, `earthquake`, `addFilter`/`removeFilter`, `playShockwave`, `onSpecial`) | `ui/GameEffects.ts` + `earthquake` из `utils/animation.ts` + `ui/PopExplosion.ts` |
+| `pool.ts` | `utils/pool.ts` (`Pool`, `MultiPool`) |
+| Спецфишки: `getSpecialSpawns`, `getSpecialArea` в `grid.ts`; `burnSpecials`, `spawnSpecials`, `activateSpecial` в `Board.ts` | `match3/Match3Special.ts` + `specials/Match3SpecialRow.ts`, `Match3SpecialBlast.ts` |

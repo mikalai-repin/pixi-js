@@ -29,7 +29,14 @@
 | fill / stroke | заливка / обводка | |
 | mask | маска | |
 | filter | фильтр | |
+| filter area | область фильтра (`filterArea`) | прямоугольник, в котором работает фильтр |
+| blur | размытие | `BlurFilter` |
+| color matrix | цветовая матрица | `ColorMatrixFilter`: матрица 4 × 5 над RGBA |
+| glow | свечение | `GlowFilter` из pixi-filters |
+| shockwave | ударная волна | `ShockwaveFilter` из pixi-filters |
 | blend mode | режим смешивания | |
+| additive blending | сложение (режим `add`) | цвета складываются, картинка светлеет |
+| premultiplied alpha | предумноженная альфа | цвет уже умножен на прозрачность |
 | tint | тонирование (`tint`) | |
 | batch / batching | батч / батчинг | объединение отрисовок |
 | draw call | вызов отрисовки (draw call) | |
@@ -89,7 +96,11 @@
 | juice | «сочность» (juice) | кавычки при первом упоминании |
 | screen shake | тряска экрана | |
 | particles | частицы | |
+| particle container | контейнер частиц (`ParticleContainer`) | |
+| static / dynamic properties | статические / динамические свойства | у частиц: выгружаются на GPU при изменении списка / каждый кадр |
 | object pool | пул объектов | |
+| effects layer, VFX | слой эффектов | `GameEffects`, поле `vfx` (visual effects) |
+| anticipation | замах | движение в обратную сторону перед основным |
 
 ## Текст
 
@@ -148,6 +159,8 @@
 | refill | досыпание | |
 | cascade / combo | каскад / комбо | |
 | special piece | спецфишка | |
+| row blast / bomb | полоса / бомба | `special-row` / `special-blast` |
+| chain reaction | цепная реакция | взрыв задевает другую спецфишку |
 | screen | экран | Home, Game, Result |
 | popup | попап | |
 | HUD | HUD, интерфейс поверх игры | |
