@@ -122,6 +122,13 @@
 | signal | сигнал | события `@pixi/ui`: `onPress.connect(...)` |
 | slider | слайдер (`Slider`) | |
 | checkbox | флажок (`CheckBox`) | |
+| screen lifecycle | жизненный цикл экрана | `prepare → resize → show → update… → hide → destroy` |
+| navigation | навигация | объект, который переключает экраны |
+| registry | реестр | экраны по именам в навигации |
+| transition | переход | анимация смены экранов |
+| sprite mask | маска-спрайт | маска по прозрачности текстуры |
+| dim | затемнение | полупрозрачный слой под попапом |
+| focus / blur | фокус / потеря фокуса | вкладка видна / ушла в фон |
 
 ## Игра (match-3)
 

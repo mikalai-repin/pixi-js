@@ -1,4 +1,4 @@
-Документ для того, кто продолжает писать курс: человека или модели в новом чате. Здесь описан **процесс**, по которому написаны главы 1–10, проверки, которые обязательны для каждой главы, и ловушки, на которых уже обожглись. Прочитайте его целиком перед началом работы вместе с `CLAUDE.md` и `docs/writing-guide.md`.
+Документ для того, кто продолжает писать курс: человека или модели в новом чате. Здесь описан **процесс**, по которому написаны главы 1–11, проверки, которые обязательны для каждой главы, и ловушки, на которых уже обожглись. Прочитайте его целиком перед началом работы вместе с `CLAUDE.md` и `docs/writing-guide.md`.
 
 # Процесс написания главы
 
@@ -104,6 +104,15 @@ node tools/e2e/run-dir.mjs content/07-logic/08-cascade/solution   # консол
 | `cellCenter` из `lib.mjs` годится для всех глав | С главы 10.4 сцена 583 × 700 сжата стилями до 500 × 600 и поле масштабировано: координаты — `toGlobal` × (`canvas.clientWidth / app.screen.width`) |
 | Счёт по центру верхней полосы помещается всегда | На телефоне (логическая ширина 394) наезжал на кнопку настроек: позиция `min(width / 2, buttonsLeft − 8 − SCORE_MAX_WIDTH / 2)` |
 | На сенсорном экране `pointerout` после касания не приходит | Приходит: `pointerover → pointerdown → pointerup → pointertap → pointerout` (эмуляция касания в Chrome), кнопка возвращается в обычное состояние |
+| Экраны могут импортировать друг друга, как в оригинале (`showScreen(GameScreen)`) | **Превью не поддерживает циклические импорты** (меню → игра → результат → меню): код не запускается вовсе. Экраны регистрируются в навигации по именам в `main.ts` |
+| Ошибки сборки модулей в превью видно в `run-dir` | Среда превью шлёт их сообщением `{ source: 'pixi-course-preview', type: 'error' }` родителю, а не в консоль; `lib.mjs` теперь собирает их в логи как `[runtime-error]`. Через `console.error` нельзя — перехваченная консоль шлёт то же сообщение, получался бесконечный цикл |
+| `BitmapFont.install` в конструкторе компонента безопасен | При пересоздании экрана — предупреждение `[Cache] already has key: TimerFont-bitmap`; удалять шрифт в `destroy` (`BitmapFont.uninstall`) |
+| Пауза под попапом — `gsap.globalTimeline.pause()` | Замораживает и анимацию появления попапа: затемнение прозрачно, панель за краем, `show` не завершается, игра «висит». Нужен `gsap.exportRoot()` — он переносит только текущие твины |
+| Бандлы из `Assets.backgroundLoadBundle` навигация увидит загруженными | Своего вопроса «загружен ли бандл» у `Assets` нет; навигация ведёт `loadedBundles` и без `navigation.preload` на мгновение показывает экран загрузки |
+| Без флага `finished` экран результата просто откроется | `update` вызывает `finish` каждый кадр, пока тот ждёт секунду: за 14 с экран результата создавался 21 раз |
+| В `implements` удобно убрать необязательный метод экрана | `main.ts` вызывает `game.resize` напрямую: у класса без метода TS выдаст ошибку (`implements` не добавляет членов классу) |
+| Звезда поверх слота того же размера | Копия звезды получала масштаб 1, а слот — 0,7: задавать масштаб обоим |
+| Скриншот поймает маску-переход (0,7 с) | Скриншоты медленнее перехода; кадры снимать синхронно в слушателе тикера (`renderer.extract.canvas`) |
 
 Вывод: **не доверяйте себе**. Если утверждение нельзя проверить, лучше его не писать.
 
@@ -140,7 +149,7 @@ node tools/e2e/run-chapter.mjs 07-logic           # все шаги в наст�
 - **Текстура `background`** — непрозрачный белый с зельями 245/255: на тёмной сцене прозрачность не помогает, только тонирование (`tint: 0xa58fd0`).
 - **`Assets.unloadBundle` с атласами** в 8.22 печатает безвредное предупреждение «not found in the Cache». В коде уроков — `Assets.unload('<псевдоним атласа>')`.
 
-# Фактическое состояние (после главы 10)
+# Фактическое состояние (после главы 11)
 
 ## Отличия от плана
 
@@ -154,31 +163,42 @@ node tools/e2e/run-chapter.mjs 07-logic           # все шаги в наст�
 | 8 | 8.4 — функции плавности на обмене и неверном ходе (туда и обратно), падение с отскоком — в 8.5. 8.6 — `onRender` у фишек и рамки. 8.9 — `AnimatedSprite` как обратный отсчёт `num-stroke-5..1` перед игрой. Отдельного «Под капотом» нет: приоритеты, `Ticker.shared`, остановка — врезка в 8.2 |
 | 9 | Как в плане; «Под капотом» разложен по врезкам шагов. Старт главы: `playCountdown` вынесен в `countdown.ts`, `BOARD_WIDTH`/`BOARD_HEIGHT` экспортированы из `Board.ts`. Очки — своё правило (10 × длина × раунд), не как в `Match3Stats` |
 | 10 | 10.1 — «Играть» как старт игры перед отсчётом (экранов ещё нет); 10.2 — стартовая панель (как `RoundedBox`); 10.6 — слайдер **скорости игры** вместо громкости (звука ещё нет), заменил отладочные клавиши; практикум — класс `Hud`. Старт главы: бандл `common` грузится вместе с `game` |
+| 11 | Таймер раунда и конец игры перенесены в 11.4 (нужны для экрана результата); 11.8 — практикум «Рекорд» (`localStorage`). Экраны открываются по именам из реестра навигации, а не классами. Старт главы: игра вынесена в `GameScreen`, `app` — в `app.ts`, `tween.ts` удалён (`singleBounce` в `Piece.ts`), `Hud.destroy` удаляет растровый шрифт |
 
-## Код игры на конец главы 10
+## Код игры на конец главы 11
 
-Файлы последнего шага (`content/10-ui/07-practice/solution/`):
+Файлы последнего шага (`content/11-screens/08-practice/solution/`), 21 файл:
 
 | Файл | Содержимое |
 |---|---|
-| `main.ts` | `app.init({ resolution: Math.max(devicePixelRatio, 2) })` без `resizeTo`; `resize()` (минимум 375 × 700, CSS-размер canvas = окно, `app.renderer.resize`); загрузка (шрифт, `preload` → фон → экран загрузки → `['game', 'common']`); поле; `Hud` (`setScore`, `setTime`, `onPause`, `onSettings`, `buttonsVisible`); очки `длина × 10 × раунд`, `showPoints`/`showCombo`; время игры 60 с в тикере при `!board.locked`; подсказка `HTMLText`; `SettingsPanel` (скорость → `app.ticker.speed` + `gsap.globalTimeline.timeScale`, флажок → видимость подсказки); `layout(width, height)` на `app.renderer.on('resize')`: `hud.resize`, подсказка внизу с `wordWrapWidth`, поле в свободном месте с масштабом «вписать» ≤ 1,5; стартовая панель на `NineSliceSprite` со своим слушателем `resize` и `Button` «Играть»; отсчёт; после него `hud.buttonsVisible = true` |
-| `Hud.ts` | `HUD_HEIGHT = 80`; таймер `BitmapText` (`TimerFont`), счёт `Label` (набегание, «прыжок»), `Button` паузы, `FancyButton` настроек; `resize(width)` со сдвигом счёта от кнопок; `destroy` гасит твины; `formatTime` |
-| `Button.ts` | `Button({ text, icon, size: 'large' \| 'small', width, height })`: `NineSliceSprite` трёх состояний, `Label` или иконка, `onPress` по `pointertap` |
-| `SettingsPanel.ts` | Панель на `NineSliceSprite`, `Slider` (25–100 %, шаг 5, `onUpdate`), `CheckBox` (виды на `Graphics`), «Готово» на `FancyButton`; колбэки `onSpeedChange`, `onHintChange`, `onClose`; экспорт `createIconButton(icon)` |
-| `Board.ts`, `Label.ts`, `countdown.ts`, `Piece.ts`, `tween.ts`, `Background.ts`, `grid.ts`, `LoadScreen.ts`, `manifest.ts` | Без изменений с гл. 9 |
+| `main.ts` | `app.init` (из `app.ts`), `resize()` с минимумом 375 × 700, `Assets.init`, шрифт, `preload`, фон; `navigation.register('home' / 'game' / 'result', …)`, `navigation.resize` на `renderer.on('resize')`, `navigation.loadScreen = LoadScreen`, `showScreen('home')`, `navigation.preload(['game', 'result'])`; `visibilitychange` → `navigation.blur/focus` |
+| `app.ts` | `export const app = new Application()` |
+| `navigation.ts` | `AppScreen` (`prepare`, `show`, `hide`, `update`, `resize`, `pause`, `resume`, `blur`, `focus`), `AppScreenConstructor` (`assetBundles`), класс `Navigation`: `register`, `showScreen(name)` с экраном загрузки и `loadedBundles`, `resize`, `preload`, `presentPopup(ctor)`, `dismissPopup`, `blur`, `focus`; `addScreen`/`removeScreen` (тикер, `interactiveChildren`, `destroy`) |
+| `GameScreen.ts` | Игра: поле, `Hud`, подсказка, очки, время в `update`; `show` — отсчёт; `hide` — поле `back.in` и угасание; конец по таймеру (`timeUp` → ждать `!board.isProcessing` → `saveScore` → через 1 с `showScreen('result')`); `pause`/`resume` через `gsap.exportRoot()`; `blur` → `PausePopup`; кнопки HUD → `presentPopup(PausePopup / SettingsPopup)` |
+| `HomeScreen.ts` | `logo-game`, подзаголовок, `Button` «Играть», «Рекорд: N»; `show` с `gsap.from`, `hide` — угасание |
+| `ResultScreen.ts` | `result-base`, «Результат», три звезды со слотами (`getGrade`), набегающий счёт, «Новый рекорд!»/«Рекорд: N», кнопки «Ещё раз» и «Меню»; `show` начинается с `MaskTransition.play(this)` |
+| `LoadScreen.ts` | `AppScreen` с `setProgress`, `update` (пульс), `resize`, `hide` |
+| `PausePopup.ts` | Попап + экспорт `createDim()` (`Texture.WHITE`, `eventMode 'static'`) и `createPanel(w, h)` |
+| `SettingsPopup.ts` | Попап настроек (`Slider`, `CheckBox`, `FancyButton`), пишет в `userSettings`, скорость применяет сразу; экспорт `createIconButton` |
+| `MaskTransition.ts` | Маска-спрайт `white-cauldron`, растёт до масштаба 30 за 0,7 с (`quint.in`) |
+| `stats.ts` | `saveScore` (+ рекорд в `localStorage` по ключу `puzzling-potions:best-score`), `getLastScore`, `getGrade` (200/600/1200), `getBestScore` |
+| `userSettings.ts` | `{ speed, hint }` |
+| `Board.ts` | + геттер `isProcessing` |
+| `Piece.ts` | + `singleBounce` (из удалённого `tween.ts`) |
+| `Hud.ts` | + `BitmapFont.uninstall('TimerFont')` в `destroy` |
+| `Button.ts`, `Label.ts`, `countdown.ts`, `Background.ts`, `grid.ts`, `manifest.ts` | Без изменений |
 
-Метки объектов для проверок: `board`, `playButton`, `startPanel`, `hud`, `pauseButton`, `settingsButton` (внутри `hud`, искать `getChildByLabel(…, true)`), `settingsPanel`.
+Проверка главы: `node tools/e2e/checks/ch11-screens.mjs` (можно `STEPS=07-focus,08-practice`) — копирует решения с `GAME_TIME = 9000`, проходит меню → (экран загрузки) → игра, ждёт конца отсчёта, на шагах 5+ ставит паузу посреди каскада (позиции фишек и таймер не меняются 0,7 с, после «Продолжить» модель и вид совпадают), настройки (слайдер 55 %, флажок подсказки применяется после закрытия), на 7+ имитирует `visibilitychange` (подмена `document.hidden`), доигрывает до результата, проверяет тексты и звёзды, «Ещё раз»/«Меню», рекорд в `localStorage` и в меню, число слушателей тикера.
 
-Проверка главы: `node tools/e2e/checks/ch10-ui.mjs` — состояния кнопки «Играть» (имена текстур фона при наведении и нажатии), старт игры по нажатию, верный ход на масштабированном canvas, пауза, панель настроек (протяжка слайдера → `ticker.speed 0.55`, флажок, «Готово»), раскладка на 375 × 667, 500 × 600 и 1280 × 800 (масштаб поля, никто не выходит за экран), скриншоты в `tools/e2e/out/ch10-*`.
+# Следующий шаг: глава 12 «Эффекты и „сочность“»
 
-# Следующий шаг: глава 11 «Экраны и навигация»
+План — в `course-plan.md` (12.1 что такое juice, 12.2 тряска, 12.3 полёт в котёл, 12.4 пул объектов, 12.5 частицы, 12.6 фильтры, 12.7 режимы смешивания, 12.8 pixi-filters, практикум — спецфишки). Что известно:
 
-План шагов — в `course-plan.md` (11.1 интерфейс экрана, 11.2 навигация, 11.3 экран загрузки, 11.4 экран результата, 11.5 попапы и настоящая пауза, 11.6 переходы, 11.7 потеря фокуса, 11.8 таймер раунда). Что уже известно:
-
-- **Оригинал:** `utils/navigation.ts` — интерфейс `AppScreen extends Container` с необязательными `show`, `hide`, `pause`, `resume`, `prepare`, `reset`, `update(ticker)`, `resize(w, h)`, `blur`, `focus`; конструктор экрана может иметь статическое `assetBundles` (навигация грузит бандлы перед показом). `Navigation`: `setBackground`, `showScreen`, `presentPopup`, `dismissPopup`, `resize`, `blur`, `focus`. Экраны: `LoadScreen`, `HomeScreen`, `GameScreen`, `ResultScreen`; попапы: `PausePopup`, `SettingsPopup`, `InfoPopup`. `visibilitychange` в `main.ts` вызывает `navigation.blur/focus`.
-- **Что переезжает:** почти весь `main.ts` становится `GameScreen` (поле, `Hud`, подсказка, очки, время, отсчёт). Стартовая панель → `HomeScreen` (логотип `logo-game` из бандла `home` + кнопка «Играть»). `LoadScreen` уже класс — добавить `show/hide`. `SettingsPanel` → попап настроек; пауза → `PausePopup` с затемнением и блокировкой экрана под ним.
-- **Настоящая пауза:** сейчас `board.locked` только блокирует ввод. Для паузы нужно останавливать твины GSAP (`pauseTweens`/`resumeTweens` по образцу `utils/animation.ts` или `gsap.globalTimeline.pause()`), тикер-время игры и `AnimatedSprite` отсчёта (он на `Ticker.shared`!).
-- **Конец игры (11.8):** таймер уже есть в `main.ts`; по нулю — `board.locked`, дождаться конца каскада (сделать у `Board` публичный признак процесса или промис), затем `ResultScreen` со счётом; звёзды — по `Match3Stats.caulculateGrade` (8 очков/с в оригинале, у нас другая шкала очков — пересчитать).
-- **Переходы (11.6):** `MaskTransition` оригинала — посмотреть перед шагом; fade — `gsap.to(screen, { alpha })`.
-- **Ресайз:** навигация должна передавать `resize(width, height)` текущему экрану и попапу; функция `resize()` с минимумом 375 × 700 остаётся в `main.ts`.
-- **Проверки:** координаты на сжатом canvas — как в `ch10-ui.mjs`; полный цикл Home → Game → Result удобно проверять с укороченным `GAME_TIME`.
+- **Оригинал:** `ui/GameEffects.ts` — `onPop` (взрыв `PopExplosion`, полёт фишки в котёл `playFlyToCauldron` с кастомными кривыми по x, y и scale), `onMatch` (звук и `earthquake` поля при комбо), `playGridExplosion` в конце игры; `utils/animation.ts` → `earthquake(target, power, duration)` трясёт `pivot`; `utils/pool.ts` — `Pool`/`MultiPool` (`get(ctor)`, `giveBack`), навигация берёт экраны из пула. `PausePopup.show` ставит текущему экрану `BlurFilter(5)` — готовая идея для 12.6.
+- **Котла у нас нет** (в оригинале — Spine `Cauldron`). Для 12.3 цель полёта — статичный `white-cauldron` (бандл `common`) или счёт в HUD (`Hud.getScorePosition()` + `toLocal(getGlobalPosition())`).
+- **pixi-filters** в оригинале нет — для 12.8 подключить пакет `pixi-filters` (версия для v8, проверить) к превью так же, как `@pixi/ui` (vendor с `external: ['pixi.js']`, import map, типы).
+- **Частицы:** в v8 — `ParticleContainer` + `Particle` (не спрайты); проверить API 8.22 (`dynamicProperties`, `addParticle`) по исходникам.
+- **Пул:** естественные кандидаты — всплывающие «+N», взрывы, частицы, копии фишек в полёте. Не забыть: объект из пула нужно «чистить» (`killTweensOf`, alpha, scale), как `Match3Piece.setup`.
+- **Спецфишки (практикум):** в оригинале `match3/Match3Special*.ts` и `specials/`; модель сетки (`grid.ts`) придётся расширить типами спецфишек — сначала прочитать, как оригинал хранит их в `grid` (отдельные числовые типы).
+- **Пауза:** все новые твины эффектов автоматически замораживаются `gsap.exportRoot()`; эффекты на `Ticker` (частицы) нужно останавливать по флагу `paused` экрана.
+- **Проверки:** координаты — как в `ch10-ui.mjs`/`ch11-screens.mjs` (CSS-масштаб); кадры коротких эффектов снимать синхронно в тикере (`renderer.extract.canvas`), см. ловушки.

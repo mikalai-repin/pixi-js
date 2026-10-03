@@ -1,0 +1,32 @@
+import { Container, Sprite, Texture } from 'pixi.js';
+import { Button } from './Button';
+import { Label } from './Label';
+import { navigation, type AppScreen } from './navigation';
+
+/** Главное меню: логотип и кнопка «Играть». Как HomeScreen в Puzzling Potions */
+export class HomeScreen extends Container implements AppScreen {
+  /** Ресурсы экрана: логотип лежит в бандле home, кнопки — в common */
+  static assetBundles = ['home', 'common'];
+
+  private readonly logo: Sprite;
+  private readonly subtitle: Label;
+  private readonly playButton: Button;
+
+  constructor() {
+    super();
+    this.logo = new Sprite(Texture.from('logo-game'));
+    this.logo.anchor.set(0.5);
+    this.logo.scale.set(0.75);
+    this.subtitle = new Label('Собери три зелья в ряд!', { fontSize: 22 });
+    this.playButton = new Button({ text: 'Играть' });
+    this.playButton.label = 'playButton';
+    this.playButton.onPress = () => navigation.showScreen('game');
+    this.addChild(this.logo, this.subtitle, this.playButton);
+  }
+
+  resize(width: number, height: number) {
+    this.logo.position.set(width / 2, height * 0.3);
+    this.subtitle.position.set(width / 2, height * 0.3 + 110);
+    this.playButton.position.set(width / 2, height * 0.65);
+  }
+}

@@ -69,7 +69,8 @@
 | Spine-котёл и дракон | Статичный спрайт `white-cauldron` | Гл. 14 (необязательная) |
 | 4 спецфишки | Без спецфишек | Гл. 12, практикум (2 спецфишки) |
 | Режимы сложности | Один режим `normal` | Гл. 13.4 — настройки |
-| Пул объектов | `new` / `destroy` | Гл. 12.4 |
+| Пул объектов (в т. ч. экранов в навигации) | `new` / `destroy` | Гл. 12.4 |
+| Пауза: `pause`/`resume` у каждой фишки и `AsyncQueue.pause` | `gsap.exportRoot()` замораживает все текущие твины | — |
 | AssetPack | Готовые файлы в `public/` | Гл. 15.2 |
 | i18n | Тексты сразу на русском | Не догоняем |
 | Очки: 1 за фишку + длина совпадения + `совпадений × раунд` (`Match3Stats`) | 10 × длина совпадения × номер раунда | Не догоняем |
@@ -98,3 +99,10 @@
 | `Hud.ts` | `ui/GameTimer.ts` + `ui/GameScore.ts` + кнопки паузы и настроек в `screens/GameScreen.ts` |
 | Стартовая панель в `main.ts` (гл. 10.2) | `ui/RoundedBox.ts` (`NineSliceSprite` из `rounded-rectangle`, тень со сдвигом) |
 | `resize()` и `layout()` в `main.ts` | `resize()` в `main.ts` (минимум 375 × 700, CSS-размер canvas) и `GameScreen.resize` |
+| `navigation.ts` (`AppScreen`, `Navigation` с реестром `register`/`showScreen(name)`, `loadScreen`, `preload`, попапы, `blur`/`focus`) | `utils/navigation.ts` (в оригинале `showScreen(ctor)` и пул экранов; у нас имена — превью не поддерживает циклические импорты) |
+| `app.ts` | `export const app` в `main.ts` оригинала |
+| `GameScreen.ts`, `HomeScreen.ts`, `ResultScreen.ts`, `LoadScreen.ts` | `screens/*.ts` (без дракона, котла и облаков) |
+| `PausePopup.ts` (+ `createDim`, `createPanel`), `SettingsPopup.ts` | `popups/PausePopup.ts`, `popups/SettingsPopup.ts` |
+| `MaskTransition.ts` | `ui/MaskTransition.ts` (маска на экране результата, а не на контейнере навигации) |
+| `stats.ts` (`saveScore`, `getGrade`, `getBestScore` в `localStorage`) | `utils/userStats.ts`, `Match3Stats.caulculateGrade` (у нас пороги по очкам 200/600/1200) |
+| `userSettings.ts` | `utils/userSettings.ts` (без сохранения) |

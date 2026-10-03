@@ -44,8 +44,18 @@ export async function openPreview(browser, files, { waitMs = 2500, width = 500, 
   });
   page.on('pageerror', (e) => logs.push(`[pageerror] ${e.message}`));
   await page.goto(`${BASE_URL}/preview.html`, { waitUntil: 'networkidle0' });
+  // Ошибки сборки модулей (например, циклический импорт) среда превью отправляет родительскому окну,
+  // а в чистом превью родитель — само окно. Копим их в массиве: через console нельзя, перехваченный
+  // console.error сам отправляет такое же сообщение, и получился бы бесконечный цикл
+  await page.evaluate(() => {
+    window.__runtimeErrors = [];
+    window.addEventListener('message', (e) => {
+      if (e.data?.source === 'pixi-course-preview' && e.data.type === 'error') window.__runtimeErrors.push(e.data.text);
+    });
+  });
   await page.evaluate((files) => window.postMessage({ type: 'run', files, entry: 'main.js' }, '*'), files);
   await wait(waitMs);
+  for (const text of await page.evaluate(() => window.__runtimeErrors.splice(0))) logs.push(`[runtime-error] ${text}`);
   return { page, logs };
 }
 
