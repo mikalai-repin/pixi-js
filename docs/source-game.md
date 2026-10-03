@@ -71,6 +71,8 @@
 | Пул объектов | `new` / `destroy` | Гл. 12.4 |
 | AssetPack | Готовые файлы в `public/` | Гл. 15.2 |
 | i18n | Тексты сразу на русском | Не догоняем |
+| Очки: 1 за фишку + длина совпадения + `совпадений × раунд` (`Match3Stats`) | 10 × длина совпадения × номер раунда | Не догоняем |
+| Системный шрифт Arial Rounded MT Bold | Веб-шрифт Nunito ExtraBold (OFL) | — |
 
 ## Соответствие учебных файлов и оригинала
 
@@ -85,6 +87,8 @@
 | `Board.process` (асинхронный каскад, гл. 8.5) | `match3/Match3Process.ts` + `utils/asyncUtils.ts` (`AsyncQueue`) |
 | `tween.ts` | `utils/animation.ts` (до GSAP; после 8.8 из него используется только `singleBounce`) |
 | `Background.ts` | `ui/TiledBackground.ts` |
-| `playCountdown` в `main.ts` (`AnimatedSprite`, гл. 8.9) | `ui/GameOvertime.ts` (цифры `num-stroke-*`, в оригинале — Sprite + GSAP) |
+| `countdown.ts` (`playCountdown`, `AnimatedSprite`, гл. 8.9; с гл. 9 — отдельный файл) | `ui/GameOvertime.ts` (цифры `num-stroke-*`, в оригинале — Sprite + GSAP) |
 | `screens/*.ts` | `screens/*.ts` |
 | `navigation.ts` | `utils/navigation.ts` |
+| `Label.ts` | `ui/Label.ts` (шрифт Nunito вместо системного Arial Rounded MT Bold) |
+| Счёт, таймер, «+N», «Комбо ×N» в `main.ts` (гл. 9) | `ui/GameScore.ts` (набегающий счёт), `ui/GameTimer.ts` (мигание в последние 10 с; у нас `BitmapText`, в оригинале `Label`), `GameScreen.onMatch` + `CloudLabel` (комбо), `Match3Stats` (очки) |

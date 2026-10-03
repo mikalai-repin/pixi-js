@@ -1,4 +1,4 @@
-Документ для того, кто продолжает писать курс: человека или модели в новом чате. Здесь описан **процесс**, по которому написаны главы 1–8, проверки, которые обязательны для каждой главы, и ловушки, на которых уже обожглись. Прочитайте его целиком перед началом работы вместе с `CLAUDE.md` и `docs/writing-guide.md`.
+Документ для того, кто продолжает писать курс: человека или модели в новом чате. Здесь описан **процесс**, по которому написаны главы 1–9, проверки, которые обязательны для каждой главы, и ловушки, на которых уже обожглись. Прочитайте его целиком перед началом работы вместе с `CLAUDE.md` и `docs/writing-guide.md`.
 
 # Процесс написания главы
 
@@ -89,6 +89,14 @@ node tools/e2e/run-dir.mjs content/07-logic/08-cascade/solution   # консол
 | `maxFPS = 30` на мониторе 60 Гц даст 20 FPS из-за округления `\| 0` | Коррекция `_lastFrame` держит ~30 FPS (проверено симуляцией с точными метками 60/120/144 Гц) |
 | `animationSpeed: -1/60` проиграет отсчёт в обратную сторону | При `loop: false` анимация с нулевого кадра сразу уходит в минус и завершается (`onComplete`) |
 | `AnimatedSprite`, GSAP и фон замедляются клавишей `app.ticker.speed` | Фон — да (`app.ticker`), GSAP — нет (свой тикер, нужен `gsap.globalTimeline.timeScale`), `AnimatedSprite` — нет (`Ticker.shared`) |
+| Текст без стиля белый, Arial | **Чёрный** (`fill: 'black'`), Arial 26 px |
+| После загрузки веб-шрифта текст перерисуется сам | Нет: `Text`, созданный до загрузки, остаётся запасным шрифтом, пока не изменится его текст или стиль (проверено: ширина 184 против 214) |
+| Имя семейства берётся из файла как есть | `getFontFamilyName`: дефисы → пробелы, заглавные буквы: `nunito-extrabold.woff2` → `'Nunito Extrabold'`. Надёжнее `data.family` |
+| `chars` у `BitmapFont.install` ограничивает набор символов | Это только предварительная отрисовка: недостающие глифы дорисовываются при первом использовании |
+| Наборы `NUMERIC`, `ALPHA` есть у `BitmapFont` | Они у `BitmapFontManager`; у `BitmapFont` только статические `install`/`uninstall` |
+| `HTMLText` отображается сразу | Пока текстура не готова — `Texture.EMPTY` (в замере 3 кадра, ~0,4 с); после смены текста ~2 кадра видна старая версия. Размер известен сразу (синхронный замер через DOM) |
+| `document.fonts.check('30px Nunito')` проверяет загрузку шрифта | Возвращает `true` и для неизвестного семейства; проверять `[...document.fonts]` |
+| Многострочную подсказку можно оставить светлой | Под полем светлый сиреневый фон из гл. 8.7: светлый текст там не читается, нужен тёмный (`0x3b1d70`) |
 
 Вывод: **не доверяйте себе**. Если утверждение нельзя проверить, лучше его не писать.
 
@@ -125,7 +133,7 @@ node tools/e2e/run-chapter.mjs 07-logic           # все шаги в наст�
 - **Текстура `background`** — непрозрачный белый с зельями 245/255: на тёмной сцене прозрачность не помогает, только тонирование (`tint: 0xa58fd0`).
 - **`Assets.unloadBundle` с атласами** в 8.22 печатает безвредное предупреждение «not found in the Cache». В коде уроков — `Assets.unload('<псевдоним атласа>')`.
 
-# Фактическое состояние (после главы 8)
+# Фактическое состояние (после главы 9)
 
 ## Отличия от плана
 
@@ -137,32 +145,34 @@ node tools/e2e/run-chapter.mjs 07-logic           # все шаги в наст�
 | 6 | Как в плане; экран загрузки вынесен в `LoadScreen.ts` |
 | 7 | Как в плане; код поля вынесен в `Board.ts`, логика — в `grid.ts`, типы фишек 1..6, 0 — пусто |
 | 8 | 8.4 — функции плавности на обмене и неверном ходе (туда и обратно), падение с отскоком — в 8.5. 8.6 — `onRender` у фишек и рамки. 8.9 — `AnimatedSprite` как обратный отсчёт `num-stroke-5..1` перед игрой. Отдельного «Под капотом» нет: приоритеты, `Ticker.shared`, остановка — врезка в 8.2 |
+| 9 | Как в плане; «Под капотом» разложен по врезкам шагов. Старт главы: `playCountdown` вынесен в `countdown.ts`, `BOARD_WIDTH`/`BOARD_HEIGHT` экспортированы из `Board.ts`. Очки — своё правило (10 × длина × раунд), не как в `Match3Stats` |
 
-## Код игры на конец главы 8
+## Код игры на конец главы 9
 
-Файлы последнего шага (`content/08-animation/09-animated-sprite/solution/`):
+Файлы последнего шага (`content/09-text/07-score/solution/`):
 
 | Файл | Содержимое |
 |---|---|
-| `main.ts` | `Application`; загрузка (`manifest-basic.json`, `preload` → фон → экран загрузки → `game`, фоновая загрузка остальных); `Background` первым на сцене + `app.renderer.on('resize')`; `new Board(app.ticker)`; отладочные клавиши `1/2/3` (`maxFPS`, `ticker.speed`, `gsap.globalTimeline.timeScale`); `playCountdown()` на `AnimatedSprite` (поле `locked` и `alpha 0.5` на время отсчёта); кнопка паузы `icon-pause` → `board.locked` |
-| `grid.ts` | Без изменений с главы 7 |
-| `Board.ts` | Как в 7.9, плюс: `processing` (ходы и тапы во время анимации игнорируются), `setPiece` больше не двигает фишку, асинхронные `swap` (неверный ход — `swap` туда и обратно), `popMatches` (ждёт `animatePop`, потом `destroy`), `dropPieces` + `refillPieces` (новые фишки стартуют выше поля, `perColumn`), `process` — `while` с `await`; выбор фишки — `gsap.to(scale, back.out)` + `killTweensOf`; пульсация рамки через `selection.onRender` |
-| `Piece.ts` | Как в 7.9, плюс: конструктор `(textureName, size, ticker)`, `onRender` → вращение `highlight` и покачивание `image` у выбранной; `animateMove` (0,2 с, `quad.out`), `animatePop` (`alpha`, 0,1 с), `animateFall` (0,5 с, `singleBounce`) на GSAP |
-| `tween.ts` | `Easing`, `linear`, `quadOut`, `backOut`, `singleBounce` (`LAND_TIME 0.55`, `BOUNCE_HEIGHT 0.15`), `lerp`, `tween(ticker, target, to, { duration, ease })` (больше не используется) |
-| `Background.ts` | `class Background extends TilingSprite`: текстура `background`, `tint 0xa58fd0`, `tileTransform.rotation = -π × 0.15`, движение `tilePosition` в `onRender`, `resize(w, h)` |
-| `LoadScreen.ts`, `manifest.ts` | Без изменений |
+| `main.ts` | Как в 8.9, плюс: `Assets.load` шрифта Nunito сразу после `Assets.init`; счёт `Label` над полем (`resolution 2`, тень, набегание через `gsap.to(shownScore, { onUpdate })` и «прыжок» масштаба); таймер `BitmapText` (`BitmapFont.install('TimerFont')`, 60 с, идёт только при `!board.locked`, мигает `tint` в последние 10 с, `formatTime` с `Math.ceil`); подсказка `HTMLText` под полем (`<b>`, `<span style>`); `board.onMatch` → очки `длина × 10 × раунд`, `showPoints` («+N» взлетает из центра совпадения, добавляется в `board`), `showCombo` («Комбо ×N» в центре поля) |
+| `Board.ts` | Как в 8.9, плюс: экспорт `BOARD_WIDTH`, `BOARD_HEIGHT`; колбэк `onMatch(matches, round)` вызывается в `process` перед `popMatches` |
+| `Label.ts` | `class Label extends Text`: стиль по умолчанию (Nunito 30, белый, обводка `0x2c136c` 5, `align: center`) + переданный, якорь 0.5 |
+| `countdown.ts` | `playCountdown(parent, x, y)` из гл. 8.9 |
+| `manifest.ts` | + `FONT_URL = '/assets/fonts/nunito-extrabold.woff2'`, `FONT_FAMILY = 'Nunito'` |
+| `Piece.ts`, `tween.ts`, `Background.ts`, `grid.ts`, `LoadScreen.ts` | Без изменений с гл. 8 |
 
-Константы поля: `ROWS = 9`, `COLUMNS = 7`, `TILE_SIZE = 50`, имена текстур `PIECE_NAMES` (тип = индекс + 1).
+Раскладка: счёт по центру и таймер у левого края поля на `y = board.y − BOARD_HEIGHT / 2 − 38`, подсказка на `y = board.y + BOARD_HEIGHT / 2 + 40`, кнопка паузы в правом верхнем углу экрана.
 
-Проверка главы: `node tools/e2e/checks/ch08-animation.mjs` — поворот подсветки и число слушателей тикера (8.1), клавиши и скорость при 20 FPS и замедлении (8.2), для 8.3–8.9: неверный ход не меняет сетку, 8 верных ходов с ожиданием `board.processing === false` и полной сверкой модели и вида, игнорирование свайпов во время анимации, движение и ресайз фона, `killTweensOf` при быстром выборе двух фишек, отсчёт. Для экспериментов из текста удобен `node tools/e2e/exp.mjs <папка> <абсолютный путь к сценарию.mjs> [ждатьМс]`: скопируйте решение шага во временную папку, внесите правку из эксперимента и напишите сценарий (`export default async ({ page, logs, findMove, swipeRight, wait, cellCenter }) => …`).
+Шрифт: `public/assets/fonts/nunito-extrabold.woff2` (19 КБ, латиница + кириллица, подмножество TTF Google Fonts v32 через `pyftsubset`), лицензия `OFL.txt`, запись в `CREDITS.md`.
 
-# Следующий шаг: глава 9 «Текст»
+Проверка главы: `node tools/e2e/checks/ch09-text.mjs` — для каждого шага подменяет `board.onMatch` и независимо считает очки (счёт на экране должен совпасть после 8 ходов), промежуточные значения набегающего счёта, число детей поля (всплывающие надписи уничтожаются), загрузка шрифта в `document.fonts`, таймер (идёт / стоит на паузе), `HTMLText`, короткий таймер 12 с (все значения и мигание).
+
+# Следующий шаг: глава 10 «Интерфейс и адаптивность»
 
 План шагов — в `course-plan.md`. Что уже известно и продумано:
 
-- **Старт главы:** решение 8.9. Отладочные клавиши можно оставить (полезны для анимаций всплывающих очков) или убрать — в тексте первого шага сказать явно.
-- **Шрифт оригинала** — системный `Arial Rounded MT Bold` (`ui/Label.ts`), файлов шрифтов в `raw-assets` нет. Для 9.3 «Свои шрифты» нужен свободный шрифт (OFL, например из Google Fonts) в `public/assets/fonts/` + запись в `CREDITS.md`; проверить, как `Assets.load` грузит `.woff2` (`loadWebFont`) и какой `fontFamily` получается.
-- **`Label`** в оригинале — `Text` с `anchor 0.5` и стилем по умолчанию; появится в 9.7 вместе с очками. Очки и комбо в оригинале — `Match3Stats` (`registerMatch`/`registerPop`), всплывающие очки — `GameEffects` + `CloudLabel`; для учебной версии достаточно счёта в `Board`/`main.ts` и всплывающего «+N» на GSAP (`gsap.to(label, { y, alpha })`, затем `destroy` после `await` — правило из 8.3).
-- **9.4 «Цена обновления»:** замерить в превью, сколько стоит смена `text` каждый кадр (Text → canvas → загрузка текстуры) против `BitmapText`; цифры брать из замера, а не из памяти.
-- **Проверить по исходникам 8.22:** имена опций `TextStyle` (`dropShadow` — объект, `stroke` — объект `{ color, width }`), `BitmapFont.install` (опции `name`, `style`, `chars`, `resolution`), поведение `resolution` у `Text`, ограничения `HTMLText` (асинхронная отрисовка).
-- Каскад из главы 8 удобно расширить колбэком (`onMatch(matches, round)`) — так очки и «Комбо!» узнают о раундах, как в оригинале через `Match3.onMatch`.
+- **Подготовка платформы:** подключить `@pixi/ui` (сейчас 2.4.1, в оригинале `^2.2.7`, peer `pixi.js ^8.6.2`) так же, как GSAP: devDependency с точной версией, сборка esbuild в `public/vendor/pixi-ui.mjs` с **`external: ['pixi.js']`** (иначе в превью окажутся две копии PixiJS), строка в import map, типы в Monaco (`node_modules/@pixi/ui/lib/**/*.d.ts` — проверить, как они ссылаются на `pixi.js`).
+- **Ресурсы:** кнопки `button-large`, `button-large-hover`, `button-large-press`, `button-small*` и `rounded-rectangle` — в атласе `common` (бандл `common` грузится фоново и явно перед кнопкой паузы). В оригинале `LargeButton`/`SmallButton` — `FancyButton` с тремя `NineSliceSprite`, `RoundedBox` — `NineSliceSprite` из `rounded-rectangle`. Размеры краёв (`leftWidth` и т. п.) взять из оригинала и проверить скриншотом.
+- **10.4 Ресайз:** в оригинале `resize()` в `main.ts` с минимальным размером 375 × 700 (масштабирует canvas стилями, если окно меньше) и `navigation.resize(w, h)`. У нас уже есть `app.renderer.on('resize')` для фона — расширить до раскладки поля, счёта, таймера, подсказки и паузы. Превью 500 × 600 меньше минимума 700 по высоте: проверить, как это выглядит, и решить, масштабировать ли поле.
+- **Разрешение:** в 9.4 обещано вернуться к `resolution: window.devicePixelRatio` + `autoDensity: true` в главе 10 — сделать в шаге про ресайз и проверить, как это влияет на `Text` (авто-разрешение) и `BitmapText` (глифы с `resolution: 2`).
+- **Практикум «HUD»:** логично собрать счёт, таймер и паузу из `main.ts` в класс `Hud` (или `GameScore`/`GameTimer`, как в оригинале) с методом `resize`. Это же решит долг «main.ts снова вырос».
+- **Кнопка паузы** сейчас — спрайт с `pointertap`; в 10.1–10.3 её естественно заменить своей кнопкой с состояниями, а в 10.6 — `FancyButton`.
