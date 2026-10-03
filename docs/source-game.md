@@ -62,7 +62,8 @@
 
 | Оригинал | Учебная версия | Когда догоняем оригинал |
 |---|---|---|
-| GSAP с кастомными кривыми | Свои твины на Ticker | Гл. 8.8 — переходим на GSAP |
+| GSAP с кастомными кривыми | Свои твины на Ticker (8.3–8.7), затем GSAP; кривая падения `singleBounce` — своя функция вместо `CustomEase` | Гл. 8.8 — переходим на GSAP |
+| Пауза каскада (`AsyncQueue.pause`), блокировка отдельных фишек | Каскад — цикл `while` с `await`, на время хода блокируется всё поле (`Board.processing`) | Гл. 11 — пауза |
 | `@pixi/ui` для кнопок | Своя кнопка на Sprite | Гл. 10.6 |
 | Spine-котёл и дракон | Статичный спрайт `white-cauldron` | Гл. 14 (необязательная) |
 | 4 спецфишки | Без спецфишек | Гл. 12, практикум (2 спецфишки) |
@@ -81,7 +82,9 @@
 | `grid.ts` | `match3/Match3Utility.ts` |
 | `Piece.ts` | `match3/Match3Piece.ts` |
 | `Board.ts` | `match3/Match3Board.ts` + `Match3Actions.ts` |
-| `process.ts` | `match3/Match3Process.ts` |
-| `tween.ts` | `utils/animation.ts` (до GSAP) |
+| `Board.process` (асинхронный каскад, гл. 8.5) | `match3/Match3Process.ts` + `utils/asyncUtils.ts` (`AsyncQueue`) |
+| `tween.ts` | `utils/animation.ts` (до GSAP; после 8.8 из него используется только `singleBounce`) |
+| `Background.ts` | `ui/TiledBackground.ts` |
+| `playCountdown` в `main.ts` (`AnimatedSprite`, гл. 8.9) | `ui/GameOvertime.ts` (цифры `num-stroke-*`, в оригинале — Sprite + GSAP) |
 | `screens/*.ts` | `screens/*.ts` |
 | `navigation.ts` | `utils/navigation.ts` |

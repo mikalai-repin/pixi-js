@@ -1,0 +1,3 @@
+# SPA: все адреса уроков (/first-app/options и т. д.) обслуживает index.html, а роутинг делает react-router.
+# Правило без «!» не перекрывает существующие файлы: preview.html, /assets, /vendor отдаются как есть.
+/*    /index.html   200

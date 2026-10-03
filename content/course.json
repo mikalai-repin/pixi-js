@@ -1,5 +1,5 @@
 {
-  "title": "PixiJS по-русски",
+  "title": "PixiJS",
   "pixiVersion": "8.22.0",
   "chapters": [
     "01-first-app",
@@ -8,6 +8,7 @@
     "04-graphics",
     "05-assets",
     "06-interaction",
-    "07-logic"
+    "07-logic",
+    "08-animation"
   ]
 }

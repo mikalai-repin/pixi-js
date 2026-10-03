@@ -3,6 +3,7 @@
 import { copyFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildSync } from 'esbuild';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const out = resolve(root, 'public/vendor');
@@ -17,4 +18,17 @@ const files = [
 for (const [from, to] of files) {
   copyFileSync(resolve(root, from), resolve(out, to));
 }
-console.log(`[vendor] скопировано файлов: ${files.length}`);
+
+// GSAP в пакете разбит на несколько ESM-файлов (index.js → gsap-core.js, CSSPlugin.js).
+// Собираем их в один модуль, чтобы import map указывала на один файл
+buildSync({
+  entryPoints: [resolve(root, 'node_modules/gsap/index.js')],
+  bundle: true,
+  format: 'esm',
+  minify: true,
+  sourcemap: true,
+  outfile: resolve(out, 'gsap.mjs'),
+  logLevel: 'warning',
+});
+
+console.log(`[vendor] скопировано файлов: ${files.length}, собран gsap.mjs`);

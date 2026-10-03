@@ -4,6 +4,13 @@ import TsWorker from 'monaco-editor/language/typescript/ts.worker.js?worker';
 import pixiTypes from '../../node_modules/pixi.js/dist/pixi.js.d.ts?raw';
 import type { FileMap } from '../content/course';
 
+// Типы GSAP: набор .d.ts с /// <reference>, внутри — `declare module "gsap"`
+const gsapTypes = import.meta.glob('../../node_modules/gsap/types/**/*.d.ts', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
 self.MonacoEnvironment = {
   getWorker(_id, label) {
     if (label === 'typescript' || label === 'javascript') return new TsWorker();
@@ -39,6 +46,9 @@ ts.typescriptDefaults.setEagerModelSync(true);
 
 // Типы pixi.js — один собранный .d.ts из пакета. Путь node_modules нужен, чтобы сработал `import ... from 'pixi.js'`
 ts.typescriptDefaults.addExtraLib(pixiTypes, 'file:///node_modules/pixi.js/index.d.ts');
+for (const [path, source] of Object.entries(gsapTypes)) {
+  ts.typescriptDefaults.addExtraLib(source, 'file:///node_modules/gsap/types/' + path.split('/gsap/types/')[1]);
+}
 ts.typescriptDefaults.addExtraLib(
   `declare var __PIXI_APP__: import('pixi.js').Application | undefined;`,
   'file:///course-globals.d.ts',

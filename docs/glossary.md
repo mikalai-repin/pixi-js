@@ -76,8 +76,14 @@
 | ticker | тикер (`Ticker`) | |
 | game loop | игровой цикл | |
 | delta time | дельта времени | |
+| frame rate, FPS | частота кадров (FPS) | кадров в секунду |
+| slow motion | замедление | `ticker.speed < 1` |
 | tween | твин | анимация «из A в B» |
+| interpolation, lerp | интерполяция, `lerp` | значение между A и B по доле t |
 | easing | функция плавности (easing) | |
+| overshoot | перелёт | `backOut` проскакивает цель и возвращается |
+| tiling sprite | повторяющийся спрайт (`TilingSprite`) | заполняет область узором из текстуры |
+| pattern | узор | повторяющаяся картинка фона |
 | frame-by-frame animation | покадровая анимация | |
 | skeletal animation | скелетная анимация | Spine |
 | juice | «сочность» (juice) | кавычки при первом упоминании |

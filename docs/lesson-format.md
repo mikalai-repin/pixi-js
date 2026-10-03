@@ -31,7 +31,7 @@ content/
 
 ```json
 {
-  "title": "PixiJS по-русски",
+  "title": "PixiJS",
   "pixiVersion": "8.22.0",
   "chapters": ["01-first-app", "02-sprites", "03-containers"]
 }

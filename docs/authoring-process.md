@@ -1,4 +1,4 @@
-Документ для того, кто продолжает писать курс: человека или модели в новом чате. Здесь описан **процесс**, по которому написаны главы 1–7, проверки, которые обязательны для каждой главы, и ловушки, на которых уже обожглись. Прочитайте его целиком перед началом работы вместе с `CLAUDE.md` и `docs/writing-guide.md`.
+Документ для того, кто продолжает писать курс: человека или модели в новом чате. Здесь описан **процесс**, по которому написаны главы 1–8, проверки, которые обязательны для каждой главы, и ловушки, на которых уже обожглись. Прочитайте его целиком перед началом работы вместе с `CLAUDE.md` и `docs/writing-guide.md`.
 
 # Процесс написания главы
 
@@ -82,6 +82,13 @@ node tools/e2e/run-dir.mjs content/07-logic/08-cascade/solution   # консол
 | Звезда с равными радиусами — многоугольник с тем же числом вершин | С удвоенным |
 | `Texture.WHITE` — 16 × 16 | 1 × 1 |
 | `arc()` после `circle()` рисуется сам по себе | Соединяется прямой с текущей точкой пера; нужен `moveTo` |
+| Без `await` перед `swap` твин просто «доедет» до уничтоженной фишки | Ошибка `Cannot set properties of null (setting 'x')`, и **тикер останавливается**: исключение в слушателе прерывает `update`, следующий кадр не запрашивается (`lastTime` замирает при `started = true`) |
+| Твин GSAP на уничтоженном объекте ведёт себя так же | Цикл GSAP не останавливается, но ошибка сыплется в консоль каждый кадр до конца твина |
+| Закомментировать `container.mask = mask` — и маски просто не будет | Графика маски начинает рисоваться как обычный объект: белый прямоугольник поверх поля. Для эксперимента — `mask.visible = false` |
+| `onRender` не вызывается у невидимых объектов | Вызывается у всех объектов в дереве сцены, включая `visible = false`, `alpha = 0` и детей невидимого родителя; не вызывается только у снятых со сцены (и у всех, если невидима сама `stage`) |
+| `maxFPS = 30` на мониторе 60 Гц даст 20 FPS из-за округления `\| 0` | Коррекция `_lastFrame` держит ~30 FPS (проверено симуляцией с точными метками 60/120/144 Гц) |
+| `animationSpeed: -1/60` проиграет отсчёт в обратную сторону | При `loop: false` анимация с нулевого кадра сразу уходит в минус и завершается (`onComplete`) |
+| `AnimatedSprite`, GSAP и фон замедляются клавишей `app.ticker.speed` | Фон — да (`app.ticker`), GSAP — нет (свой тикер, нужен `gsap.globalTimeline.timeScale`), `AnimatedSprite` — нет (`Ticker.shared`) |
 
 Вывод: **не доверяйте себе**. Если утверждение нельзя проверить, лучше его не писать.
 
@@ -114,9 +121,11 @@ node tools/e2e/run-chapter.mjs 07-logic           # все шаги в наст�
 - **Не пишите во временные файлы `/tmp`**: используйте папку scratchpad сессии или `tools/e2e/out/` (она в `.gitignore`).
 - **`manifest-basic.json`** — для глав 5–12 (без звуков и Spine). Полный `manifest.json` подключать с главы 13 вместе с `@pixi/sound`, иначе консоль засыпана предупреждениями «don't know how to parse».
 - **Monaco: «TypeScript not registered!»** — при первом открытии страницы TS-воркер может быть ещё не готов. `compileStep` ждёт его с повторными попытками (`src/editor/monaco.ts`). Если увидите в `run-chapter` ошибку страницы с пустым сообщением — ищите похожую гонку.
+- **Полиморфный `this` и mapped types:** тип вида `{ [K in keyof T as …] }` с `T = this` (вызов `tween(this.ticker, this, …)` из класса) не раскрывается, и `{ x, y }` не проходит проверку. Рабочая сигнатура: `tween<T extends object, K extends keyof T>(…, target: T, to: Record<K, number>, …)`.
+- **Текстура `background`** — непрозрачный белый с зельями 245/255: на тёмной сцене прозрачность не помогает, только тонирование (`tint: 0xa58fd0`).
 - **`Assets.unloadBundle` с атласами** в 8.22 печатает безвредное предупреждение «not found in the Cache». В коде уроков — `Assets.unload('<псевдоним атласа>')`.
 
-# Фактическое состояние (после главы 7)
+# Фактическое состояние (после главы 8)
 
 ## Отличия от плана
 
@@ -127,34 +136,33 @@ node tools/e2e/run-chapter.mjs 07-logic           # все шаги в наст�
 | 5 | Шаги: псевдонимы → манифест и бандлы → прогресс → атласы (AssetPack) → форматы и разрешения → фоновая загрузка → выгрузка → практикум «экран загрузки» |
 | 6 | Как в плане; экран загрузки вынесен в `LoadScreen.ts` |
 | 7 | Как в плане; код поля вынесен в `Board.ts`, логика — в `grid.ts`, типы фишек 1..6, 0 — пусто |
+| 8 | 8.4 — функции плавности на обмене и неверном ходе (туда и обратно), падение с отскоком — в 8.5. 8.6 — `onRender` у фишек и рамки. 8.9 — `AnimatedSprite` как обратный отсчёт `num-stroke-5..1` перед игрой. Отдельного «Под капотом» нет: приоритеты, `Ticker.shared`, остановка — врезка в 8.2 |
 
-## Код игры на конец главы 7
+## Код игры на конец главы 8
 
-Файлы последнего шага (`content/07-logic/09-practice/solution/`):
+Файлы последнего шага (`content/08-animation/09-animated-sprite/solution/`):
 
 | Файл | Содержимое |
 |---|---|
-| `main.ts` | `Application`, запуск тестов, загрузка (`Assets.init` с `manifest-basic.json`, бандлы `preload` → `game`, фоновая загрузка остальных), `new Board(app.ticker)` в центре экрана, кнопка паузы `icon-pause` → `board.locked` |
-| `grid.ts` | Чистая логика: `PieceType`, `Grid`, `Position`, `createGrid` (без готовых троек), `getRandomType`, `getType`, `setType`, `swapTypes`, `isInside`, `cloneGrid`, `gridToString`, `samePosition`, `getMatches(grid, filter?, matchSize)`, `applyGravity` (возвращает `[from, to][]`), `fillUp` (возвращает новые клетки снизу вверх) |
-| `Board.ts` | `class Board extends Container`: подложка с градиентом и рамкой, клетки на общем `GraphicsContext`, слой `pieces` с маской, рамка выбора (пульсирует через переданный `ticker`), `select`, `onSwipe` → `isValidMove` → `swap` → `process()` (синхронный каскад: `popMatches` → `dropPieces` → `refillPieces` в цикле), `locked`, `getViewPosition`, `getPiece`, `destroy` с отпиской от тикера |
-| `Piece.ts` | `class Piece extends Container`: `highlight` + `image` по псевдонимам текстур, `eventMode 'static'`, `cursor`, `hitArea` на всю клетку, свайп с порогом 10 px (`pointerdown`, `globalpointermove`, `pointerup`/`upoutside`/`cancel`), колбэки `onTap`, `onSwipe`, поля `row`, `column` |
-| `LoadScreen.ts` | Логотип, пульсирующая точка, полоска прогресса, отписка от тикера в `destroy` |
-| `manifest.ts` | `MANIFEST_URL = '/assets/packed/manifest-basic.json'`, `ASSETS_BASE_PATH` |
-| `tests.ts` | Мини-каркас `test`/`expectEqual` и 9 тестов `getMatches`/`applyGravity` |
+| `main.ts` | `Application`; загрузка (`manifest-basic.json`, `preload` → фон → экран загрузки → `game`, фоновая загрузка остальных); `Background` первым на сцене + `app.renderer.on('resize')`; `new Board(app.ticker)`; отладочные клавиши `1/2/3` (`maxFPS`, `ticker.speed`, `gsap.globalTimeline.timeScale`); `playCountdown()` на `AnimatedSprite` (поле `locked` и `alpha 0.5` на время отсчёта); кнопка паузы `icon-pause` → `board.locked` |
+| `grid.ts` | Без изменений с главы 7 |
+| `Board.ts` | Как в 7.9, плюс: `processing` (ходы и тапы во время анимации игнорируются), `setPiece` больше не двигает фишку, асинхронные `swap` (неверный ход — `swap` туда и обратно), `popMatches` (ждёт `animatePop`, потом `destroy`), `dropPieces` + `refillPieces` (новые фишки стартуют выше поля, `perColumn`), `process` — `while` с `await`; выбор фишки — `gsap.to(scale, back.out)` + `killTweensOf`; пульсация рамки через `selection.onRender` |
+| `Piece.ts` | Как в 7.9, плюс: конструктор `(textureName, size, ticker)`, `onRender` → вращение `highlight` и покачивание `image` у выбранной; `animateMove` (0,2 с, `quad.out`), `animatePop` (`alpha`, 0,1 с), `animateFall` (0,5 с, `singleBounce`) на GSAP |
+| `tween.ts` | `Easing`, `linear`, `quadOut`, `backOut`, `singleBounce` (`LAND_TIME 0.55`, `BOUNCE_HEIGHT 0.15`), `lerp`, `tween(ticker, target, to, { duration, ease })` (больше не используется) |
+| `Background.ts` | `class Background extends TilingSprite`: текстура `background`, `tint 0xa58fd0`, `tileTransform.rotation = -π × 0.15`, движение `tilePosition` в `onRender`, `resize(w, h)` |
+| `LoadScreen.ts`, `manifest.ts` | Без изменений |
 
 Константы поля: `ROWS = 9`, `COLUMNS = 7`, `TILE_SIZE = 50`, имена текстур `PIECE_NAMES` (тип = индекс + 1).
 
-# Следующий шаг: глава 8 «Игровой цикл и анимация»
+Проверка главы: `node tools/e2e/checks/ch08-animation.mjs` — поворот подсветки и число слушателей тикера (8.1), клавиши и скорость при 20 FPS и замедлении (8.2), для 8.3–8.9: неверный ход не меняет сетку, 8 верных ходов с ожиданием `board.processing === false` и полной сверкой модели и вида, игнорирование свайпов во время анимации, движение и ресайз фона, `killTweensOf` при быстром выборе двух фишек, отсчёт. Для экспериментов из текста удобен `node tools/e2e/exp.mjs <папка> <абсолютный путь к сценарию.mjs> [ждатьМс]`: скопируйте решение шага во временную папку, внесите правку из эксперимента и напишите сценарий (`export default async ({ page, logs, findMove, swipeRight, wait, cellCenter }) => …`).
 
-План шагов — в `course-plan.md`. Рекомендации, которые уже продуманы:
+# Следующий шаг: глава 9 «Текст»
 
-- **Старт главы:** решение 7.9 без `tests.ts` и вызова `runTests` (тесты оставить как файл можно, но чище убрать).
-- **8.1–8.2 Ticker:** вращать подсветку выбранной фишки (`highlight.rotation`, как `renderUpdate` в `Match3Piece`), сравнить `deltaTime` и `deltaMS`, показать независимость от FPS через `app.ticker.maxFPS = 30`.
-- **8.3 Свой твин:** файл `tween.ts` с функцией `tween(target, props, durationMs, easing): Promise<void>` на `Ticker`. Анимированный `swap` в `Board`. Важно: на время анимации блокировать фишки (`piece.eventMode = 'none'` или `interactiveChildren`), сбрасывая состояние нажатия, как `Match3Piece.lock()`.
-- **8.4 Easing:** `quadOut`, `backOut` и «одиночный отскок» для падения (в оригинале кастомная кривая `easeSingleBounce` для `animateFall`, длительность 0.5 с; обмен — `quad.out`, 0.2 с; исчезновение — `alpha` за 0.1 с; появление — масштаб от 2 до 1 с `back.out`, 0.2 с).
-- **8.5 Асинхронный каскад:** `process` превращается в `async`: `await` анимаций исчезновения, падения и досыпания (новые фишки начинают выше поля: `y = -BOARD_HEIGHT / 2 - n × TILE_SIZE`, где n — номер новой фишки в столбце; маска поля их обрежет). Неверный ход: обмен туда и обратно с анимацией, как в оригинальном `Match3Actions.swapPieces`. Модель (`grid.ts`) не меняется ни на строку — это нужно подчеркнуть в тексте.
-- **8.6 `onRender`:** перенести вращение подсветки в `this.onRender` фишки; объяснить разницу с `ticker.add` и что `onRender` вызывается только для объектов на сцене.
-- **8.7 TilingSprite:** фон из `background` бандла `preload` (как `TiledBackground.ts` оригинала: `tileTransform.rotation = -π × 0.15`, движение `tilePosition`).
-- **8.8 GSAP:** добавить в `scripts/copy-vendor.mjs` копирование `gsap` (ESM-сборка) в `public/vendor/` и в import map `public/preview.html` (`"gsap": "/vendor/gsap.mjs"` или аналог), установить `gsap` в devDependencies, добавить типы для Monaco (`addExtraLib` с `.d.ts` из пакета `gsap`, путь `file:///node_modules/gsap/index.d.ts`). Переписать `tween` на `gsap.to`, показать `killTweensOf`.
-- **8.9 AnimatedSprite:** в ресурсах игры покадровых анимаций нет. Варианты: сгенерировать кадры кодом (`renderer.generateTexture`) или сделать демо на кадрах `num-stroke-1..5` (цифры обратного отсчёта) — проверить, как это выглядит.
-- Для проверки анимаций в `tools/e2e/checks/` пригодится ожидание окончания каскада (например, флаг `board.processing`) и проверка согласованности из `ch07-logic.mjs` после серии ходов.
+План шагов — в `course-plan.md`. Что уже известно и продумано:
+
+- **Старт главы:** решение 8.9. Отладочные клавиши можно оставить (полезны для анимаций всплывающих очков) или убрать — в тексте первого шага сказать явно.
+- **Шрифт оригинала** — системный `Arial Rounded MT Bold` (`ui/Label.ts`), файлов шрифтов в `raw-assets` нет. Для 9.3 «Свои шрифты» нужен свободный шрифт (OFL, например из Google Fonts) в `public/assets/fonts/` + запись в `CREDITS.md`; проверить, как `Assets.load` грузит `.woff2` (`loadWebFont`) и какой `fontFamily` получается.
+- **`Label`** в оригинале — `Text` с `anchor 0.5` и стилем по умолчанию; появится в 9.7 вместе с очками. Очки и комбо в оригинале — `Match3Stats` (`registerMatch`/`registerPop`), всплывающие очки — `GameEffects` + `CloudLabel`; для учебной версии достаточно счёта в `Board`/`main.ts` и всплывающего «+N» на GSAP (`gsap.to(label, { y, alpha })`, затем `destroy` после `await` — правило из 8.3).
+- **9.4 «Цена обновления»:** замерить в превью, сколько стоит смена `text` каждый кадр (Text → canvas → загрузка текстуры) против `BitmapText`; цифры брать из замера, а не из памяти.
+- **Проверить по исходникам 8.22:** имена опций `TextStyle` (`dropShadow` — объект, `stroke` — объект `{ color, width }`), `BitmapFont.install` (опции `name`, `style`, `chars`, `resolution`), поведение `resolution` у `Text`, ограничения `HTMLText` (асинхронная отрисовка).
+- Каскад из главы 8 удобно расширить колбэком (`onMatch(matches, round)`) — так очки и «Комбо!» узнают о раундах, как в оригинале через `Match3.onMatch`.

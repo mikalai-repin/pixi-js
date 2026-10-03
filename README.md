@@ -1,4 +1,6 @@
-# PixiJS по-русски
+# PixiJS
+
+[WEB](https://pixi-js-ru.netlify.app/)
 
 Интерактивный курс по PixiJS v8 на русском языке: текст урока, редактор кода и живой результат в одном окне. В ходе курса вы с нуля пишете match-3 игру по мотивам [Puzzling Potions](https://github.com/pixijs/open-games/tree/main/puzzling-potions), а затем разбираете оригинальный код и устройство PixiJS изнутри.
 
