@@ -3,7 +3,7 @@ import { Group, Panel, Separator } from 'react-resizable-panels';
 import { Navigate, useParams } from 'react-router';
 import { allSteps, findStep, type FileMap, type Step } from '../content/course';
 import { CodeEditor } from '../editor/CodeEditor';
-import { compileStep, disposeModels, syncModels } from '../editor/monaco';
+import { compileStep, disposeModels, formatEditor, refreshDiagnostics, syncModels } from '../editor/monaco';
 import { LessonPanel } from '../lesson/LessonPanel';
 import { Preview, type PreviewRun } from '../preview/Preview';
 import { progress } from '../progress/storage';
@@ -61,6 +61,8 @@ function StepWorkspace({ step }: { step: Step }) {
     syncModels(step.id, filesRef.current);
     progress.setLastStep(step.id);
     runCode();
+    // Подчёркивания, посчитанные, пока воркер ещё не знал всех файлов шага, пересчитываем
+    refreshDiagnostics(step.id, step.fileOrder);
     const pending = timers.current;
     return () => {
       window.clearTimeout(pending.autorun);
@@ -147,6 +149,9 @@ function StepWorkspace({ step }: { step: Step }) {
       <div className="toolbar">
         <button className="button primary" onClick={runCode} title="Ctrl/Cmd + Enter">
           ▶ Запустить
+        </button>
+        <button className="button" onClick={() => formatEditor()} title="Prettier · Ctrl/Cmd + S, Shift + Alt + F">
+          Формат
         </button>
         <button className="button" onClick={onReset}>
           Сброс

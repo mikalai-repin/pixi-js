@@ -68,6 +68,34 @@ ts.typescriptDefaults.addExtraLib(
   'file:///course-globals.d.ts',
 );
 
+// --- Форматирование кода (Prettier) ---
+/** Настройки подобраны под стиль кода уроков: с ними код курса почти не меняется */
+const PRETTIER_OPTIONS = { printWidth: 120, singleQuote: true, trailingComma: 'all', tabWidth: 2, semi: true } as const;
+
+/** Prettier весит заметно, поэтому грузим его только при первом форматировании */
+async function formatTypeScript(code: string) {
+  const [prettier, typescript, estree] = await Promise.all([
+    import('prettier/standalone'),
+    import('prettier/plugins/typescript'),
+    import('prettier/plugins/estree'),
+  ]);
+  return prettier.format(code, { ...PRETTIER_OPTIONS, parser: 'typescript', plugins: [typescript, estree] });
+}
+
+// Стандартная команда Monaco «Format Document» (Shift+Alt+F и контекстное меню) теперь работает через Prettier
+monaco.languages.registerDocumentFormattingEditProvider('typescript', {
+  async provideDocumentFormattingEdits(model) {
+    try {
+      const text = await formatTypeScript(model.getValue());
+      return [{ range: model.getFullModelRange(), text }];
+    } catch (error) {
+      // Код с синтаксической ошибкой Prettier не разберёт: просто ничего не меняем
+      console.warn('Prettier не смог отформатировать код:', error);
+      return [];
+    }
+  },
+});
+
 function applyTheme() {
   const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   monaco.editor.setTheme(dark ? 'vs-dark' : 'vs');
@@ -137,9 +165,33 @@ async function getTypeScriptWorker() {
   }
 }
 
+/**
+ * Отдаёт воркеру TypeScript все файлы шага. Воркер синхронизирует все модели только при своём создании,
+ * а дальше каждый запрос передаёт ему лишь свой файл. Если модели шага созданы разом (переход на другой шаг),
+ * проверка одного файла может начаться раньше, чем воркер узнает о соседних, — и импорты станут «не найдены»
+ */
+async function syncStepWithWorker(stepId: string, files: string[]) {
+  const getWorker = await getTypeScriptWorker();
+  const uris = files.map((file) => modelUri(stepId, file)).filter((uri) => monaco.editor.getModel(uri));
+  await getWorker(...uris);
+  return getWorker;
+}
+
+let revalidation = 0;
+
+/**
+ * Пересчитывает подчёркивания ошибок во всех моделях, когда воркер уже знает все файлы шага.
+ * Изменение extra-lib заставляет Monaco заново проверить все модели, не перезапуская воркер
+ * (изменение настроек компилятора перезапустило бы его)
+ */
+export async function refreshDiagnostics(stepId: string, files: string[]) {
+  await syncStepWithWorker(stepId, files);
+  ts.typescriptDefaults.addExtraLib(`// ${++revalidation}`, 'file:///course-revalidate.d.ts');
+}
+
 /** Компилирует TS-файлы шага в JS через воркер TypeScript, который уже работает в Monaco */
 export async function compileStep(stepId: string, files: string[]): Promise<CompileResult> {
-  const getWorker = await getTypeScriptWorker();
+  const getWorker = await syncStepWithWorker(stepId, files);
   const result: CompileResult = { files: {}, diagnostics: [] };
   for (const file of files) {
     const uri = modelUri(stepId, file);
@@ -172,6 +224,12 @@ export async function compileStep(stepId: string, files: string[]): Promise<Comp
     }
   }
   return result;
+}
+
+/** Форматирует файл, открытый в редакторе. Без редактора берёт первый на странице (кнопка «Формат») */
+export function formatEditor(editor = monaco.editor.getEditors()[0]) {
+  if (!editor || editor.getOption(monaco.editor.EditorOption.readOnly)) return;
+  editor.getAction('editor.action.formatDocument')?.run();
 }
 
 export { monaco };

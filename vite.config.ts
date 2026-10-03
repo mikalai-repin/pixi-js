@@ -21,6 +21,10 @@ export default defineConfig({
       'shiki/langs/css.mjs',
       'shiki/langs/bash.mjs',
       'shiki/langs/glsl.mjs',
+      // Prettier грузится лениво при первом форматировании
+      'prettier/standalone',
+      'prettier/plugins/typescript',
+      'prettier/plugins/estree',
     ],
   },
 });

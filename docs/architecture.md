@@ -32,6 +32,7 @@
 | Роутинг | `react-router`, URL вида `/:chapter/:step` | Шаг можно открыть по ссылке |
 | Редактор | Monaco Editor | TS language service из коробки: автодополнение и подсказки по типам `pixi.js` — главный плюс для изучения API |
 | Компиляция TS → JS | TS-воркер Monaco (`getEmitOutput`) | Без отдельного компилятора |
+| Форматирование кода | Prettier 3.9.9 (`prettier/standalone` + плагины `typescript`, `estree`), грузится лениво при первом форматировании | Кнопка «Формат», Ctrl/Cmd + S и Shift + Alt + F; настройки `printWidth 120, singleQuote, trailingComma all` подобраны под стиль кода уроков (меняют 17 строк из 3672) |
 | Markdown уроков | `markdown-it` + свои контейнеры + `shiki` для подсветки | Подсветка совпадает с редактором |
 | Хранение прогресса | `localStorage` | Бэкенд не нужен |
 | PixiJS в превью | Локальная копия `pixi.mjs` из `node_modules` в `public/vendor/` | Работает офлайн, версия зафиксирована |
@@ -152,6 +153,7 @@ scripts/
 
 - **Monaco 0.57**: API TypeScript находится в `monaco.typescript`, а не в `monaco.languages.typescript`. Воркеры импортируются как `monaco-editor/editor/editor.worker.js?worker` и `monaco-editor/language/typescript/ts.worker.js?worker`.
 - **Vite `optimizeDeps.include`**: все динамически импортируемые модули (языки и темы Shiki, Monaco) должны быть перечислены явно, иначе после первого запуска Vite пересобирает зависимости, и открытая страница падает с «Failed to fetch dynamically imported module».
+- **Синхронизация моделей с TS-воркером**: воркер Monaco получает все модели только при своём создании (`eagerModelSync`), а дальше каждый запрос передаёт ему лишь свой файл. При переходе на другой шаг модели создаются разом, и проверка `main.ts` успевала пройти до того, как воркер узнавал о соседних файлах: «Cannot find module './Label'», и маркеры не пересчитывались. Поэтому `compileStep` сначала синхронизирует все файлы шага (`getWorker(...uris)`), а `refreshDiagnostics` после создания моделей синхронизирует их и меняет служебную extra-lib `file:///course-revalidate.d.ts` — это пересчитывает маркеры, не перезапуская воркер (смена настроек компилятора перезапустила бы его).
 - **«TypeScript not registered!»**: при первой загрузке TS-воркер Monaco может быть не готов; `compileStep` повторяет попытку получить его.
 - **Кириллица в Monaco**: отключён `unicodeHighlight.ambiguousCharacters`, иначе русские комментарии подсвечиваются как подозрительные.
 - **Shiki** подключается через `shiki/core` с выбранными языками: полный бандл тянет ~200 грамматик.

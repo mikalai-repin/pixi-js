@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { modelUri, monaco } from './monaco';
+import { formatEditor, modelUri, monaco } from './monaco';
 
 interface Props {
   stepId: string;
@@ -33,6 +33,8 @@ export function CodeEditor({ stepId, files, active, readonly, onSelect, onChange
       unicodeHighlight: { ambiguousCharacters: false },
     });
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => handlers.current.onRun());
+    // Ctrl/Cmd + S форматирует код (вместо диалога сохранения страницы): сохраняется он и так автоматически
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => formatEditor(editor));
     editor.onDidChangeModelContent(() => {
       const model = editor.getModel();
       if (!model) return;
