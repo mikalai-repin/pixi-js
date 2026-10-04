@@ -43,7 +43,8 @@ content/              — уроки курса (см. lesson-format.md)
 public/assets/        — ассеты игры по бандлам (game/, common/, preload/…), см. CREDITS.md
 public/preview*.      — среда выполнения кода ученика (без сборщика)
 src/                  — код платформы (Vite + React + TS)
-scripts/              — copy-vendor, validate-content
+scripts/              — copy-vendor, validate-content, step-files (старт шага по цепочке)
+tools/authoring/      — steps.py: запись шагов главы без копий start/ (для генераторов глав)
 ```
 
 ## Команды
@@ -74,7 +75,7 @@ scripts/              — copy-vendor, validate-content
 
 1. Найти шаг в `docs/course-plan.md`, проверить, какие API и понятия он вводит и что уже известно ученику из предыдущих шагов.
 2. Писать по `docs/writing-guide.md`; термины — строго по `docs/glossary.md` (новый термин сначала добавить в словарь).
-3. `start/` шага N+1 должен совпадать с `solution/` шага N (если не оговорено иное).
+3. Старт шага N+1 — решение шага N (`startFrom: previous`), и **папку `start/` для него не создаём**: платформа, валидатор и `tools/e2e` берут старт из предыдущего шага. Своя `start/` — только у шагов `startFrom: custom` (первый шаг главы, заготовки с `TODO`). Генератор главы пишет шаги через `write_steps` из `tools/authoring/steps.py` — он соблюдает это правило сам.
 4. Решение каждого шага должно запускаться без ошибок и давать видимый результат. После правок — `npm run validate`.
 5. Проверять факты об API по исходникам/типам `pixi.js` установленной версии, а не по памяти: в интернете много устаревших примеров для v6/v7.
 6. Каждое утверждение и каждый эксперимент из текста урока проверять запуском кода (`tools/e2e/run-dir.mjs`). Полный процесс — в `docs/authoring-process.md`.

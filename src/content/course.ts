@@ -109,11 +109,17 @@ function loadCourse(): Course {
       if (rest.length > 1) stepDirs.add(rest[0]);
     }
 
+    // Шаг со startFrom: previous не хранит папку start/: его старт — решение предыдущего шага
+    // (у шага без решения — его собственный старт). Так в content/ нет копий одних и тех же файлов
+    let previousResult: FileMap = {};
     chapter.steps = [...stepDirs].sort().map((stepDir, index): Step => {
       const base = `${prefix}${stepDir}/`;
       const { meta, body } = parseLesson(`${base}lesson.md`);
-      const start = collectFiles(`${base}start/`);
+      const ownStart = collectFiles(`${base}start/`);
+      const start =
+        Object.keys(ownStart).length || meta.startFrom === 'custom' ? ownStart : { ...previousResult };
       const solution = collectFiles(`${base}solution/`);
+      previousResult = Object.keys(solution).length ? solution : start;
       return {
         id: `${chapter.slug}/${stripOrder(stepDir)}`,
         dir: `${chapterDir}/${stepDir}`,

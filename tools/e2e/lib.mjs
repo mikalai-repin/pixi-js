@@ -1,10 +1,11 @@
 // Общие помощники браузерных проверок курса.
 // Нужен запущенный dev-сервер (npm run dev) и установленный Chrome.
-import { readdirSync, readFileSync, mkdirSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
 import puppeteer from 'puppeteer-core';
+import { readStepDir } from '../../scripts/step-files.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const CONTENT = resolve(ROOT, 'content');
@@ -21,11 +22,15 @@ export function launch() {
   return puppeteer.launch({ executablePath: CHROME, headless: 'new', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 }
 
-/** Компилирует все .ts из папки шага (start/ или solution/) в карту { 'main.js': код } для превью */
+/**
+ * Компилирует все .ts из папки шага (start/ или solution/) в карту { 'main.js': код } для превью.
+ * Путь …/<шаг>/start у шага со startFrom: previous (папки нет) даёт решение предыдущего шага
+ */
 export function compileDir(dir) {
   const files = {};
-  for (const name of readdirSync(dir).filter((n) => n.endsWith('.ts'))) {
-    const { code } = transformSync(readFileSync(`${dir}/${name}`, 'utf8'), { loader: 'ts', format: 'esm', target: 'esnext' });
+  for (const [name, source] of Object.entries(readStepDir(dir))) {
+    if (name.includes('/') || !name.endsWith('.ts')) continue;
+    const { code } = transformSync(source, { loader: 'ts', format: 'esm', target: 'esnext' });
     files[name.replace(/\.ts$/, '.js')] = code;
   }
   return files;
