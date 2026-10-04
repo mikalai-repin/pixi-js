@@ -5,6 +5,7 @@
 import { AssetPack } from '@assetpack/core';
 import { pixiPipes } from '@assetpack/core/pixi';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { fixSpineAlpha } from './fix-spine-alpha.mjs';
 
 const entry = './reference/open-games/puzzling-potions/raw-assets';
 const output = './public/assets/packed';
@@ -46,5 +47,8 @@ for (const bundle of withSound.bundles) {
   bundle.assets = bundle.assets.filter((asset) => !asset.src.some((src) => NEEDS_SPINE.test(src)));
 }
 writeFileSync(`${output}/manifest-sound.json`, JSON.stringify(withSound, null, 2));
+
+// Картинки Spine с premultiplied alpha AssetPack сжимает как обычные: пересобираем их (подробности — в fix-spine-alpha.mjs)
+console.log('[assets] исправлены картинки Spine:', (await fixSpineAlpha(entry, output)).join(', '));
 
 console.log(`[assets] готово: ${output} (manifest.json, manifest-basic.json, manifest-sound.json)`);

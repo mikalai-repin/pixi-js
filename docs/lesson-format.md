@@ -147,7 +147,7 @@ export default function check(app: Application): CheckResult {
 - Лежат в `public/assets/`, в коде указываются абсолютным путём `/assets/...`.
 - Папки повторяют бандлы оригинала: `preload/`, `game/`, `common/`, `home/`, `result/`. Внутри — отдельные PNG (атласы оригинала разложены), звуки и файлы Spine. Пример: `/assets/game/piece-dragon.png`, `/assets/preload/background.png`, `/assets/common/button-large.png`.
 - С главы 5 — ресурсы, собранные AssetPack (`npm run assets`, скрипт `scripts/build-assets.mjs`): `public/assets/packed/`. Там атласы в webp/png и `@0.5x`, звуки в mp3/ogg и три манифеста:
-  - `manifest.json` — полный, со звуками и Spine (с главы 14, когда подключён плагин Spine);
+  - `manifest.json` — полный, со звуками и Spine (с главы 14, когда подключён runtime Spine). Картинки дракона в нём пересобраны `scripts/fix-spine-alpha.mjs` (обычная альфа, `pma:false`);
   - `manifest-sound.json` — со звуками, без Spine. Глава 13: `@pixi/sound` уже подключён, плагина Spine ещё нет;
   - `manifest-basic.json` — без звуков и Spine. Используется в главах 5–12, чтобы без `@pixi/sound` и плагина Spine не было предупреждений о неизвестных файлах.
 - Имена кадров в атласах совпадают с именами файлов оригинала без расширения: `piece-dragon`, `highlight`, `icon-pause`, `logo-pixi`. Псевдонимы атласов: `game-atlas`, `common-atlas` и т. д.

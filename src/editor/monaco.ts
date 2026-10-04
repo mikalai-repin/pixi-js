@@ -34,6 +34,12 @@ const pixiSoundTypes = import.meta.glob('../../node_modules/@pixi/sound/lib/**/*
   eager: true,
 }) as Record<string, string>;
 
+// Типы Spine (с главы 14): spine-pixi-v8 реэкспортирует spine-core, поэтому нужны оба пакета
+const spineTypes = import.meta.glob(
+  ['../../node_modules/@esotericsoftware/spine-pixi-v8/dist/**/*.d.ts', '../../node_modules/@esotericsoftware/spine-core/dist/**/*.d.ts'],
+  { query: '?raw', import: 'default', eager: true },
+) as Record<string, string>;
+
 self.MonacoEnvironment = {
   getWorker(_id, label) {
     if (label === 'typescript' || label === 'javascript') return new TsWorker();
@@ -86,6 +92,12 @@ for (const [path, source] of Object.entries(pixiSoundTypes)) {
   ts.typescriptDefaults.addExtraLib(source, 'file:///node_modules/@pixi/sound/lib/' + path.split('/@pixi/sound/lib/')[1]);
 }
 ts.typescriptDefaults.addExtraLib(`export * from './lib/index';`, 'file:///node_modules/@pixi/sound/index.d.ts');
+for (const [path, source] of Object.entries(spineTypes)) {
+  ts.typescriptDefaults.addExtraLib(source, 'file:///node_modules/@esotericsoftware/' + path.split('/@esotericsoftware/')[1]);
+}
+for (const name of ['spine-pixi-v8', 'spine-core']) {
+  ts.typescriptDefaults.addExtraLib(`export * from './dist/index';`, `file:///node_modules/@esotericsoftware/${name}/index.d.ts`);
+}
 ts.typescriptDefaults.addExtraLib(gradientParserTypes, 'file:///node_modules/gradient-parser/index.d.ts');
 ts.typescriptDefaults.addExtraLib(
   `declare var __PIXI_APP__: import('pixi.js').Application | undefined;`,

@@ -1,7 +1,7 @@
 dragon-skeleton-610Rig.png
 size:1698,431
 filter:Linear,Linear
-pma:true
+pma:false
 Elixir/arm-l
 bounds:1433,9,113,138
 rotate:90

@@ -9,6 +9,15 @@
 Папки соответствуют бандлам оригинала (`preload{m}`, `game{m}` и т. д.); атласы `{tps}`
 здесь разложены на отдельные PNG.
 
+`packed/` — те же ресурсы, собранные AssetPack (`npm run assets`). Картинки атласа Spine-дракона
+(`packed/common/dragon-skeleton-*.{png,webp}`) после сборки пересобраны из исходника скриптом
+`scripts/fix-spine-alpha.mjs`: premultiplied alpha переведена в обычную, в атласах `pma:false`.
+
+## Spine Runtimes
+
+`@esotericsoftware/spine-pixi-v8` (глава 14) © Esoteric Software LLC, лицензия Spine Runtimes License
+(не MIT; текст копируется в `public/vendor/spine-runtimes-LICENSE.txt`).
+
 ## Шрифты (`fonts/`)
 
 `fonts/nunito-extrabold.woff2` — шрифт **Nunito ExtraBold** (https://github.com/googlefonts/nunito),
