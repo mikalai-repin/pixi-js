@@ -68,7 +68,7 @@
 | Поле не масштабируется, минимальный экран под поле | Поле вписывается между полосами HUD, масштаб до 1,5 | — |
 | Spine-котёл и дракон | Статичный спрайт `white-cauldron` | Гл. 14 (необязательная) |
 | 4 спецфишки (`row`, `column`, `colour`, `blast`), срабатывают по нажатию и при обмене | 2 спецфишки (`special-row`, `special-blast`), только по нажатию; цепная реакция есть | Гл. 12, практикум |
-| Режимы сложности | Один режим `normal` | Гл. 13.4 — настройки |
+| Режимы сложности | Один режим `normal` | Не догоняем |
 | Пул объектов `MultiPool` (`pool.get(ctor)`, фишки поля, копии, взрывы; навигация берёт экраны через `pool.get`, но обратно не сдаёт) | `Pool<T>` с функцией создания (гл. 12.4) только для эффектов: кольца, копии, искры. Фишки поля и экраны создаются заново | — |
 | Котёл (Spine), зелья летят в котёл | Зелья летят в счёт HUD (`Hud.getScorePosition`), кривые — стандартные `sine.in/out`, `back.in` вместо `CustomEase` | Гл. 14 — котёл |
 | Взрыв `PopExplosion` — 12 спрайтов на GSAP | Искры в `ParticleContainer` на тикере (гл. 12.5) | — |
@@ -78,6 +78,9 @@
 | i18n | Тексты сразу на русском | Не догоняем |
 | Очки: 1 за фишку + длина совпадения + `совпадений × раунд` (`Match3Stats`) | 10 × длина совпадения × номер раунда | Не догоняем |
 | Системный шрифт Arial Rounded MT Bold | Веб-шрифт Nunito ExtraBold (OFL) | — |
+| Три громкости: общая (`sound.volumeAll` + `muteAll` на нуле), музыка, эффекты; каждая под своим ключом `localStorage` (`utils/storage.ts`), сохраняется при каждом изменении | Две громкости (музыка, эффекты) + подсказка одним JSON под ключом `puzzling-potions:settings`, сохраняются по «Готово», чтение с проверкой типов (гл. 13.7); слайдер скорости убран | — |
+| Звук кнопок в каждом классе кнопки (`LargeButton`, `SmallButton`, `ImageButton`…) | `Button` + `addButtonSounds` для `FancyButton` (гл. 13.8) | — |
+| Пауза без звуковых эффектов | Под паузой эквалайзер глушит весь звук (`sound.filtersAll`, гл. 13.5); в меню подсказка «Нажмите на экран, чтобы включить звук», пока контекст заблокирован (гл. 13.4) | — |
 
 ## Соответствие учебных файлов и оригинала
 
@@ -98,7 +101,7 @@
 | `Label.ts` | `ui/Label.ts` (шрифт Nunito вместо системного Arial Rounded MT Bold) |
 | Счёт, таймер, «+N», «Комбо ×N» в `main.ts` (гл. 9) | `ui/GameScore.ts` (набегающий счёт), `ui/GameTimer.ts` (мигание в последние 10 с; у нас `BitmapText`, в оригинале `Label`), `GameScreen.onMatch` + `CloudLabel` (комбо), `Match3Stats` (очки) |
 | `Button.ts` | `ui/LargeButton.ts` + `ui/SmallButton.ts` (у нас свой класс на `NineSliceSprite`, в оригинале — `FancyButton`) |
-| `SettingsPanel.ts` (`FancyButton`, `Slider`, `CheckBox`, `createIconButton`) | `popups/SettingsPopup.ts`, `ui/VolumeSlider.ts`, `ui/ImageButton.ts` (у нас слайдер скорости вместо громкости) |
+| `SettingsPanel.ts` (`FancyButton`, `Slider`, `CheckBox`, `createIconButton`) | `popups/SettingsPopup.ts`, `ui/VolumeSlider.ts`, `ui/ImageButton.ts` (до гл. 13 у нас слайдер скорости вместо громкости) |
 | `Hud.ts` | `ui/GameTimer.ts` + `ui/GameScore.ts` + кнопки паузы и настроек в `screens/GameScreen.ts` |
 | Стартовая панель в `main.ts` (гл. 10.2) | `ui/RoundedBox.ts` (`NineSliceSprite` из `rounded-rectangle`, тень со сдвигом) |
 | `resize()` и `layout()` в `main.ts` | `resize()` в `main.ts` (минимум 375 × 700, CSS-размер canvas) и `GameScreen.resize` |
@@ -108,7 +111,8 @@
 | `PausePopup.ts` (+ `createDim`, `createPanel`), `SettingsPopup.ts` | `popups/PausePopup.ts`, `popups/SettingsPopup.ts` |
 | `MaskTransition.ts` | `ui/MaskTransition.ts` (маска на экране результата, а не на контейнере навигации) |
 | `stats.ts` (`saveScore`, `getGrade`, `getBestScore` в `localStorage`) | `utils/userStats.ts`, `Match3Stats.caulculateGrade` (у нас пороги по очкам 200/600/1200) |
-| `userSettings.ts` | `utils/userSettings.ts` (без сохранения) |
+| `userSettings.ts` (с гл. 13.7: `loadSettings` с проверкой, `saveSettings`) | `utils/userSettings.ts` + `utils/storage.ts` |
+| `audio.ts` (`bgm`, `sfx`, `isAudioLocked`, гл. 13) | `utils/audio.ts` (у нас без общей громкости; `BGM.setVolume` останавливает твин кроссфейда) |
 | `GameEffects.ts` (слой `vfx`: кольцо, полёт к счёту, искры, `earthquake`, `addFilter`/`removeFilter`, `playShockwave`, `onSpecial`) | `ui/GameEffects.ts` + `earthquake` из `utils/animation.ts` + `ui/PopExplosion.ts` |
 | `pool.ts` | `utils/pool.ts` (`Pool`, `MultiPool`) |
 | Спецфишки: `getSpecialSpawns`, `getSpecialArea` в `grid.ts`; `burnSpecials`, `spawnSpecials`, `activateSpecial` в `Board.ts` | `match3/Match3Special.ts` + `specials/Match3SpecialRow.ts`, `Match3SpecialBlast.ts` |

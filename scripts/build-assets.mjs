@@ -39,4 +39,12 @@ for (const bundle of manifest.bundles) {
 }
 writeFileSync(`${output}/manifest-basic.json`, JSON.stringify(manifest, null, 2));
 
-console.log(`[assets] готово: ${output} (manifest.json, manifest-basic.json)`);
+// Третий манифест — со звуками, но без Spine: для главы 13 (@pixi/sound подключён, плагина Spine ещё нет)
+const NEEDS_SPINE = /\.atlas$|-skeleton/;
+const withSound = JSON.parse(readFileSync(`${output}/manifest.json`, 'utf8'));
+for (const bundle of withSound.bundles) {
+  bundle.assets = bundle.assets.filter((asset) => !asset.src.some((src) => NEEDS_SPINE.test(src)));
+}
+writeFileSync(`${output}/manifest-sound.json`, JSON.stringify(withSound, null, 2));
+
+console.log(`[assets] готово: ${output} (manifest.json, manifest-basic.json, manifest-sound.json)`);

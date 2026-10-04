@@ -44,6 +44,8 @@ GSAP (с главы 8): **`gsap@3.15.0`** в devDependencies, точная ве�
 
 pixi-filters (с главы 12): **`pixi-filters@6.1.5`** в devDependencies, точная версия (6.x требует `pixi.js` 8). Готовая ESM-сборка `dist/pixi-filters.mjs` уже импортирует `pixi.js` как внешний модуль, поэтому `copy-vendor.mjs` просто копирует её (и `.map`) в `public/vendor/`. Типы для Monaco — `node_modules/pixi-filters/lib/**/*.d.ts`, точка входа `file:///node_modules/pixi-filters/index.d.ts` с `export * from './lib/index'` и типы `@types/gradient-parser` (их импортирует `CssGradientParser.d.ts`) как `file:///node_modules/gradient-parser/index.d.ts`. В минифицированной сборке имена классов изменены (`GlowFilter` → `zt`): в проверках не опираться на `constructor.name`.
 
+`@pixi/sound` (с главы 13): **`@pixi/sound@6.0.1`** в devDependencies, точная версия (`peerDependencies: pixi.js ^8.0.0`). Готовая ESM-сборка `dist/pixi-sound.mjs` импортирует `pixi.js` как внешний модуль — `copy-vendor.mjs` копирует её (и `.map`) в `public/vendor/`. Типы для Monaco — `node_modules/@pixi/sound/lib/**/*.d.ts` (внешние импорты в них только из `pixi.js`), точка входа `file:///node_modules/@pixi/sound/index.d.ts` с `export * from './lib/index'`. Импорт модуля регистрирует расширение загрузчика (`extensions.add(soundAsset)`) и сразу создаёт `AudioContext`: в превью без жеста пользователя он `suspended` (см. главу 13.4). Звуки грузятся из `manifest-sound.json` (со звуками, без Spine).
+
 Версия PixiJS: **`pixi.js@8.22.0`**, зафиксирована точно в `package.json` и `content/course.json` (оригинал требует `^8.14.1`, это совместимо). Типы для Monaco берутся из той же версии: собранный файл `node_modules/pixi.js/dist/pixi.js.d.ts` подключается как `file:///node_modules/pixi.js/index.d.ts`.
 
 ## Превью: как запускается код ученика
@@ -52,7 +54,7 @@ pixi-filters (с главы 12): **`pixi-filters@6.1.5`** в devDependencies, т
 2. Пересоздаёт `<iframe src="/preview.html">`. Каждый запуск — новый iframe: полная очистка состояния, WebGL-контекст гарантированно освобождается.
 3. Через `postMessage` передаёт в iframe карту `{ "main.js": "<js>", "Piece.js": "<js>" }`.
 4. `preview.html`:
-   - содержит import map: `"pixi.js" → "/vendor/pixi.mjs"`, `"gsap" → "/vendor/gsap.mjs"`, `"@pixi/ui" → "/vendor/pixi-ui.mjs"`, `"pixi-filters" → "/vendor/pixi-filters.mjs"` (позже — `@pixi/sound`). Подмодули вроде `pixi.js/advanced-blend-modes` в import map нет: в курсе используются только встроенные режимы смешивания;
+   - содержит import map: `"pixi.js" → "/vendor/pixi.mjs"`, `"gsap" → "/vendor/gsap.mjs"`, `"@pixi/ui" → "/vendor/pixi-ui.mjs"`, `"pixi-filters" → "/vendor/pixi-filters.mjs"`, `"@pixi/sound" → "/vendor/pixi-sound.mjs"`. Подмодули вроде `pixi.js/advanced-blend-modes` в import map нет: в курсе используются только встроенные режимы смешивания;
    - переписывает относительные импорты (`./Piece`) на blob-URL модулей с помощью `es-module-lexer` (с обходом зависимостей);
    - импортирует `main.js` как точку входа;
    - называет каждый модуль именем исходника (`//# sourceURL=Piece.ts`) и по встроенной source map переводит позиции в стеке ошибок обратно в строки `.ts`.
@@ -126,9 +128,9 @@ public/
   vendor/         — pixi.mjs и прочие библиотеки для превью
   assets/         — ассеты уроков
 scripts/
-  copy-vendor.mjs      — копирует pixi.mjs, pixi-filters.mjs и es-module-lexer и собирает gsap.mjs и pixi-ui.mjs в public/vendor (запускается перед dev/build)
+  copy-vendor.mjs      — копирует pixi.mjs, pixi-filters.mjs, pixi-sound.mjs и es-module-lexer и собирает gsap.mjs и pixi-ui.mjs в public/vendor (запускается перед dev/build)
   validate-content.mjs — проверка структуры уроков
-  build-assets.mjs     — сборка ресурсов оригинала через AssetPack в public/assets/packed (+ manifest-basic.json)
+  build-assets.mjs     — сборка ресурсов оригинала через AssetPack в public/assets/packed (+ manifest-basic.json, manifest-sound.json)
   fetch-reference.mjs  — скачивание эталона open-games в reference/
 ```
 

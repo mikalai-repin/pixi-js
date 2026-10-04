@@ -16,6 +16,9 @@ const files = [
   // pixi-filters (с главы 12): готовая ESM-сборка уже импортирует 'pixi.js' как внешний модуль
   ['node_modules/pixi-filters/dist/pixi-filters.mjs', 'pixi-filters.mjs'],
   ['node_modules/pixi-filters/dist/pixi-filters.mjs.map', 'pixi-filters.mjs.map'],
+  // @pixi/sound (с главы 13): тоже готовая ESM-сборка с внешним 'pixi.js'
+  ['node_modules/@pixi/sound/dist/pixi-sound.mjs', 'pixi-sound.mjs'],
+  ['node_modules/@pixi/sound/dist/pixi-sound.mjs.map', 'pixi-sound.mjs.map'],
 ];
 
 for (const [from, to] of files) {

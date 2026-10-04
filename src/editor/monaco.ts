@@ -27,6 +27,13 @@ const pixiFiltersTypes = import.meta.glob('../../node_modules/pixi-filters/lib/*
   eager: true,
 }) as Record<string, string>;
 
+// Типы @pixi/sound: lib/**/*.d.ts, внешние импорты в них — только из 'pixi.js'
+const pixiSoundTypes = import.meta.glob('../../node_modules/@pixi/sound/lib/**/*.d.ts', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
+
 self.MonacoEnvironment = {
   getWorker(_id, label) {
     if (label === 'typescript' || label === 'javascript') return new TsWorker();
@@ -75,6 +82,10 @@ for (const [path, source] of Object.entries(pixiFiltersTypes)) {
   ts.typescriptDefaults.addExtraLib(source, 'file:///node_modules/pixi-filters/lib/' + path.split('/pixi-filters/lib/')[1]);
 }
 ts.typescriptDefaults.addExtraLib(`export * from './lib/index';`, 'file:///node_modules/pixi-filters/index.d.ts');
+for (const [path, source] of Object.entries(pixiSoundTypes)) {
+  ts.typescriptDefaults.addExtraLib(source, 'file:///node_modules/@pixi/sound/lib/' + path.split('/@pixi/sound/lib/')[1]);
+}
+ts.typescriptDefaults.addExtraLib(`export * from './lib/index';`, 'file:///node_modules/@pixi/sound/index.d.ts');
 ts.typescriptDefaults.addExtraLib(gradientParserTypes, 'file:///node_modules/gradient-parser/index.d.ts');
 ts.typescriptDefaults.addExtraLib(
   `declare var __PIXI_APP__: import('pixi.js').Application | undefined;`,
@@ -83,7 +94,7 @@ ts.typescriptDefaults.addExtraLib(
 
 // --- Форматирование кода (Prettier) ---
 /** Настройки подобраны под стиль кода уроков: с ними код курса почти не меняется */
-const PRETTIER_OPTIONS = { printWidth: 120, singleQuote: true, trailingComma: 'all', tabWidth: 2, semi: true } as const;
+const PRETTIER_OPTIONS = { printWidth: 65, singleQuote: true, trailingComma: 'all', tabWidth: 2, semi: true } as const;
 
 /** Prettier весит заметно, поэтому грузим его только при первом форматировании */
 async function formatTypeScript(code: string) {
