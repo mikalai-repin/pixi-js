@@ -5,3 +5,4 @@ public/vendor
 reference
 tools/e2e/out
 .assetpack
+.steps

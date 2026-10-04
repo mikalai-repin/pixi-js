@@ -100,8 +100,8 @@ export default function check(app: Application): CheckResult {
 Уроки лежат в `content/` (формат — в `lesson-format.md`) и подключаются на этапе сборки через `import.meta.glob('/content/**/*', { query: '?raw', eager: true })`.
 
 `npm run validate` проверяет контент:
-- `scripts/validate-content.mjs`: у каждого шага есть `lesson.md` с `title` и старт с `main.ts`; у шага `startFrom: previous` нет папки `start/` — его старт берётся из предыдущего шага (`scripts/step-files.mjs`), своя `start/` — только у `startFrom: custom`;
-- `tsc -p tsconfig.content.json`: весь код уроков (start и solution) типизируется по настоящему `pixi.js`. Глобальные объявления для уроков — `content/globals.d.ts`.
+- `scripts/validate-content.mjs`: у каждого шага есть `lesson.md` с `title` и старт с `main.ts`; цепочка шагов согласована. Шаг хранит только изменённые файлы (`start/` — отличия от результата предыдущего шага, `solution/` — от старта, см. `lesson-format.md`), полные наборы собирает `scripts/step-files.mjs`. Копия файла, совпадающая с тем, поверх чего она лежит, `start/` или `remove` без `startFrom: custom` и `custom` без них — ошибки. Полные снимки всех шагов валидатор записывает в `.steps/` (не в git);
+- `tsc -p tsconfig.content.json`: полные снимки из `.steps/` (start и solution каждого шага) типизируются по настоящему `pixi.js`. Глобальные объявления для уроков — `content/globals.d.ts`.
 
 ## Прогресс ученика
 

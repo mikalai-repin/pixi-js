@@ -3,6 +3,7 @@ title: Попапы и настоящая пауза
 files: [navigation.ts, GameScreen.ts, PausePopup.ts, SettingsPopup.ts, userSettings.ts, Hud.ts, main.ts, ResultScreen.ts, HomeScreen.ts, stats.ts, LoadScreen.ts, app.ts, Board.ts, Piece.ts, Button.ts, Label.ts, countdown.ts, Background.ts, grid.ts, manifest.ts]
 focus: navigation.ts
 startFrom: custom
+remove: [SettingsPanel.ts]
 api: [presentPopup, dismissPopup, pause, resume, gsap.exportRoot, Texture.WHITE]
 ---
 

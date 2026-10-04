@@ -3,6 +3,7 @@ title: Ticker
 files: [main.ts, Board.ts, Piece.ts, grid.ts, LoadScreen.ts, manifest.ts]
 focus: Piece.ts
 startFrom: custom
+remove: [tests.ts]
 api: [Ticker, ticker.add, ticker.remove, deltaTime, deltaMS, elapsedMS, lastTime]
 ---
 

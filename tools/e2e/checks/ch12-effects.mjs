@@ -1,8 +1,8 @@
 // Проверка главы 12: эффекты появляются и убираются, пулы переиспользуют объекты, искры стоят на паузе,
 // фильтры ставятся и снимаются, в практикуме — спецфишки на подставном поле и цепная реакция.
 // node tools/e2e/checks/ch12-effects.mjs   (STEPS=05-particles,09-practice — только эти шаги)
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { CONTENT, OUT, compileDir, launch, openPreview, wait } from '../lib.mjs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { CONTENT, OUT, compileDir, copyStepDir, launch, openPreview, wait } from '../lib.mjs';
 
 const C = `${CONTENT}/12-effects`;
 const browser = await launch();
@@ -13,7 +13,7 @@ function prepare(step, { gameTime = 40000, grid } = {}) {
   const dir = `${OUT}/ch12-${step}${grid ? '-grid' : ''}`;
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
-  cpSync(`${C}/${step}/solution`, dir, { recursive: true });
+  copyStepDir(`${C}/${step}/solution`, dir);
   const screen = `${dir}/GameScreen.ts`;
   writeFileSync(screen, readFileSync(screen, 'utf8').replace('const GAME_TIME = 60_000;', `const GAME_TIME = ${gameTime};`));
   if (grid) {

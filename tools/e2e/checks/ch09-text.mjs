@@ -1,7 +1,7 @@
 // Проверка главы 9: счёт совпадает с подсчётом очков, шрифт загружен, счёт набегает, таймер идёт только
 // во время игры и стоит на паузе, HTMLText отрисован, всплывающие надписи создаются и уничтожаются.
 // node tools/e2e/checks/ch09-text.mjs
-import { CONTENT, cellCenter, compileDir, launch, openPreview, wait } from '../lib.mjs';
+import { CONTENT, cellCenter, compileDir, copyStepDir, launch, openPreview, wait } from '../lib.mjs';
 
 const C = `${CONTENT}/09-text`;
 const browser = await launch();
@@ -141,10 +141,10 @@ for (const step of ['01-text', '02-styles', '03-fonts', '04-update-cost', '05-bi
 
 // 9.5: формат времени и мигание в последние секунды — на коротком таймере
 {
-  const { readFileSync, writeFileSync, mkdirSync, cpSync } = await import('node:fs');
+  const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs');
   const tmp = `${process.cwd()}/tools/e2e/out/ch09-timer`;
   mkdirSync(tmp, { recursive: true });
-  cpSync(`${C}/05-bitmap-text/solution`, tmp, { recursive: true });
+  copyStepDir(`${C}/05-bitmap-text/solution`, tmp);
   const main = readFileSync(`${tmp}/main.ts`, 'utf8').replace('const GAME_TIME = 60_000;', 'const GAME_TIME = 12_000;');
   writeFileSync(`${tmp}/main.ts`, main);
   const { page, logs } = await openPreview(browser, compileDir(tmp), { waitMs: 1500 });

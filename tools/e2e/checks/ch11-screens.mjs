@@ -1,8 +1,8 @@
 // Проверка главы 11: полный цикл меню → игра → результат → игра/меню с укороченным временем игры,
 // пауза посреди каскада (анимации и время стоят), настройки, потеря фокуса, рекорд, отсутствие утечек.
 // node tools/e2e/checks/ch11-screens.mjs
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { CONTENT, OUT, compileDir, launch, openPreview, wait } from '../lib.mjs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { CONTENT, OUT, compileDir, copyStepDir, launch, openPreview, wait } from '../lib.mjs';
 
 const C = `${CONTENT}/11-screens`;
 const browser = await launch();
@@ -13,7 +13,7 @@ function prepare(step, gameTime) {
   const dir = `${OUT}/ch11-${step}`;
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
-  cpSync(`${C}/${step}/solution`, dir, { recursive: true });
+  copyStepDir(`${C}/${step}/solution`, dir);
   const file = `${dir}/GameScreen.ts`;
   writeFileSync(file, readFileSync(file, 'utf8').replace('const GAME_TIME = 60_000;', `const GAME_TIME = ${gameTime};`));
   return dir;

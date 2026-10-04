@@ -3,6 +3,7 @@ title: Интерфейс экрана
 files: [GameScreen.ts, navigation.ts, main.ts, app.ts, Hud.ts, Board.ts, Piece.ts, Button.ts, SettingsPanel.ts, Label.ts, LoadScreen.ts, countdown.ts, Background.ts, grid.ts, manifest.ts]
 focus: navigation.ts
 startFrom: custom
+remove: [tween.ts]
 api: [AppScreen, prepare, show, hide, update, resize]
 ---
 

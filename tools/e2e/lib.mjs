@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformSync } from 'esbuild';
 import puppeteer from 'puppeteer-core';
-import { readStepDir } from '../../scripts/step-files.mjs';
+import { readStepDir, writeFiles } from '../../scripts/step-files.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const CONTENT = resolve(ROOT, 'content');
@@ -24,7 +24,7 @@ export function launch() {
 
 /**
  * Компилирует все .ts из папки шага (start/ или solution/) в карту { 'main.js': код } для превью.
- * Путь …/<шаг>/start у шага со startFrom: previous (папки нет) даёт решение предыдущего шага
+ * Шаг хранит только изменённые файлы: полный набор собирается по цепочке шагов (scripts/step-files.mjs)
  */
 export function compileDir(dir) {
   const files = {};
@@ -34,6 +34,11 @@ export function compileDir(dir) {
     files[name.replace(/\.ts$/, '.js')] = code;
   }
   return files;
+}
+
+/** Записывает полный набор файлов папки шага (…/<шаг>/start или …/<шаг>/solution) в папку dest — для правок в проверках */
+export function copyStepDir(dir, dest) {
+  writeFiles(dest, readStepDir(dir));
 }
 
 /**

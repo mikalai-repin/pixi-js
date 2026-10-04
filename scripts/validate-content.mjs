@@ -1,10 +1,12 @@
-// Проверка контента курса: структура шагов и цепочка шагов (у шага startFrom: previous нет папки start/,
-// его старт — результат предыдущего шага: scripts/step-files.mjs).
-// Запуск: npm run validate (типы кода уроков проверяет отдельно `tsc -p tsconfig.content.json`)
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+// Проверка контента курса: структура шагов и цепочка шагов. Шаг хранит только изменённые файлы
+// (scripts/step-files.mjs): в start/ — отличия от результата предыдущего шага, в solution/ — отличия от старта.
+// Полные снимки всех шагов записываются в .steps/<глава>/<шаг>/{start,solution}: по ним
+// `tsc -p tsconfig.content.json` проверяет типы, и их удобно смотреть глазами.
+// Запуск: npm run validate
+import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
-import { readFiles, readResult, readStart } from './step-files.mjs';
+import { readBase, readFiles, readSolution, readStart, writeFiles } from './step-files.mjs';
 
 const root = join(import.meta.dirname, '..', 'content');
 const errors = [];
@@ -13,6 +15,8 @@ const warnings = [];
 const isDir = (path) => existsSync(path) && statSync(path).isDirectory();
 
 const course = JSON.parse(readFileSync(join(root, 'course.json'), 'utf8'));
+const snapshots = join(import.meta.dirname, '..', '.steps');
+rmSync(snapshots, { recursive: true, force: true });
 let stepCount = 0;
 
 for (const chapterDir of course.chapters) {
@@ -48,23 +52,28 @@ for (const chapterDir of course.chapters) {
     }
 
     const startFrom = meta.startFrom ?? 'previous';
-    const solution = readFiles(join(stepPath, 'solution'));
-    if (startFrom === 'previous') {
-      const index = steps.indexOf(stepDir);
-      if (index === 0) errors.push(`${where}: первый шаг главы должен иметь startFrom: custom`);
-      else if (isDir(join(stepPath, 'start'))) {
-        const same =
-          JSON.stringify(readFiles(join(stepPath, 'start'))) === JSON.stringify(readResult(join(chapterPath, steps[index - 1])));
-        errors.push(
-          `${where}: startFrom: previous, но есть папка start/ — ${same ? 'это копия результата предыдущего шага, удалите её' : 'она отличается от результата предыдущего шага: нужен startFrom: custom'}`,
-        );
-      }
+    const base = readBase(stepPath);
+    const ownStart = readFiles(join(stepPath, 'start'));
+    const remove = meta.remove ?? [];
+    for (const name of remove) if (!(name in base)) errors.push(`${where}: remove: ${name} — такого файла нет в результате предыдущего шага`);
+    for (const [name, text] of Object.entries(ownStart)) {
+      if (base[name] === text) errors.push(`${where}: start/${name} совпадает с результатом предыдущего шага — удалите копию`);
     }
-    const start = startFrom === 'previous' ? readStart(stepPath) : readFiles(join(stepPath, 'start'));
-    if (!start['main.ts']) errors.push(`${where}: нет start/main.ts`);
-    if (meta.noSolution && Object.keys(solution).length) errors.push(`${where}: noSolution: true, но папка solution/ не пуста`);
-    if (!solution['main.ts'] && !meta.noSolution) warnings.push(`${where}: нет solution/main.ts — кнопки «Решение» не будет`);
+    const changesStart = Object.keys(ownStart).length > 0 || remove.length > 0;
+    if (startFrom === 'previous' && changesStart) errors.push(`${where}: есть start/ или remove — нужен startFrom: custom`);
+    if (startFrom === 'custom' && !changesStart) errors.push(`${where}: startFrom: custom, но старт совпадает с результатом предыдущего шага — уберите startFrom`);
 
+    const start = readStart(stepPath);
+    const ownSolution = readFiles(join(stepPath, 'solution'));
+    for (const [name, text] of Object.entries(ownSolution)) {
+      if (start[name] === text) errors.push(`${where}: solution/${name} совпадает со стартом — удалите копию`);
+    }
+    const solution = readSolution(stepPath);
+    writeFiles(join(snapshots, where, 'start'), start);
+    writeFiles(join(snapshots, where, 'solution'), solution);
+    if (!start['main.ts']) errors.push(`${where}: в старте нет main.ts`);
+    if (meta.noSolution && Object.keys(solution).length) errors.push(`${where}: noSolution: true, но папка solution/ не пуста`);
+    if (!Object.keys(solution).length && !meta.noSolution) warnings.push(`${where}: нет solution/ — кнопки «Решение» не будет`);
   }
 }
 

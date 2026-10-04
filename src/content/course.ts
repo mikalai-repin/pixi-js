@@ -9,6 +9,8 @@ export interface StepMeta {
   readonly?: string[];
   focus?: string;
   startFrom?: 'previous' | 'custom';
+  /** Файлы базы (результата предыдущего шага), которых нет в старте этого шага */
+  remove?: string[];
   api?: string[];
   /** Шаг без задания (демо, теория): кнопки «Решение» нет */
   noSolution?: boolean;
@@ -86,7 +88,14 @@ function orderFiles(meta: StepMeta, files: FileMap): string[] {
   return ordered.sort((a, b) => Number(b === 'main.ts') - Number(a === 'main.ts'));
 }
 
+// Шаг хранит только то, что в нём меняется (так же считает scripts/step-files.mjs):
+//   база     — результат предыдущего шага курса, через границы глав;
+//   старт    — база без файлов из meta.remove, поверх неё — файлы из start/;
+//   решение  — старт, поверх него — файлы из solution/ (нет solution/ — нет решения);
+//   результат — решение, а у шага без решения — старт.
+// Так в content/ нет копий одних и тех же файлов
 function loadCourse(): Course {
+  let previousResult: FileMap = {};
   const courseJson = readJson<{ title: string; pixiVersion: string; chapters: string[] }>('/content/course.json');
 
   const chapters = courseJson.chapters.map((chapterDir, chapterIndex): Chapter => {
@@ -109,16 +118,14 @@ function loadCourse(): Course {
       if (rest.length > 1) stepDirs.add(rest[0]);
     }
 
-    // Шаг со startFrom: previous не хранит папку start/: его старт — решение предыдущего шага
-    // (у шага без решения — его собственный старт). Так в content/ нет копий одних и тех же файлов
-    let previousResult: FileMap = {};
     chapter.steps = [...stepDirs].sort().map((stepDir, index): Step => {
       const base = `${prefix}${stepDir}/`;
       const { meta, body } = parseLesson(`${base}lesson.md`);
-      const ownStart = collectFiles(`${base}start/`);
-      const start =
-        Object.keys(ownStart).length || meta.startFrom === 'custom' ? ownStart : { ...previousResult };
-      const solution = collectFiles(`${base}solution/`);
+      const start: FileMap = { ...previousResult };
+      for (const name of meta.remove ?? []) delete start[name];
+      Object.assign(start, collectFiles(`${base}start/`));
+      const ownSolution = collectFiles(`${base}solution/`);
+      const solution: FileMap = Object.keys(ownSolution).length ? { ...start, ...ownSolution } : {};
       previousResult = Object.keys(solution).length ? solution : start;
       return {
         id: `${chapter.slug}/${stripOrder(stepDir)}`,
