@@ -127,3 +127,18 @@
 | `GameEffects.ts` (слой `vfx`: кольцо, полёт к счёту, искры, `earthquake`, `addFilter`/`removeFilter`, `playShockwave`, `onSpecial`) | `ui/GameEffects.ts` + `earthquake` из `utils/animation.ts` + `ui/PopExplosion.ts` |
 | `pool.ts` | `utils/pool.ts` (`Pool`, `MultiPool`) |
 | Спецфишки: `getSpecialSpawns`, `getSpecialArea` в `grid.ts`; `burnSpecials`, `spawnSpecials`, `activateSpecial` в `Board.ts` | `match3/Match3Special.ts` + `specials/Match3SpecialRow.ts`, `Match3SpecialBlast.ts` |
+
+# Оригинал: Bubbo Bubbo (глава 17, вариант Б)
+
+Источник: `reference/open-games/bubbo-bubbo`, тот же коммит `83b4676`, автор — [AshsHub](https://github.com/AshsHub), лицензия MIT. Около 8 100 строк TypeScript.
+
+| Что | В оригинале | В учебной версии (17.5–17.9) |
+|---|---|---|
+| Устройство | `Game` + 10 систем (`SystemRunner`): уровень, физика, прицел, пушка, очки, эффекты, пауза, усиления, HUD, фон; сигналы `typed-signals`; экраны и навигация | Один класс `BubbleGame`, модель в `bubbles.ts` без PixiJS, без экранов |
+| Сетка | 13 пузырей в ряду, «удвоенные» индексы `i` (`x = (i + 1) × R`), ряды через полный диаметр, ряд — объект `BubbleLine` с флагом чётности | 10/9 пузырей, ряды через √3/2 диаметра, `grid[row][column]` |
+| Прицел | `AimSystem`: пересечение отрезков со стенами и «крышей», до 3 отрезков, 600 px | Та же функция `advanceShot`, что двигает выстрел |
+| Физика | `PhysicsSystem`: `velocity` за кадр без `deltaTime`, тела `STATIC/KINEMATIC/DYNAMIC` | `SHOT_SPEED × dt`, шаги по 4 px |
+| Прилипание | `handleConnect`: 3 ближайших соседа задетого пузыря, рекурсия | Перебор 133 клеток |
+| Группы | Лопнувшие и висящие **падают** и отскакивают, очки растут внутри обвала | Лопнувшие тают, висящие падают |
+| Давление | Новые ряды сверху по таймеру, ускоряются | Потолок опускается каждые 6 выстрелов |
+| Ресурсы | `raw-assets`: 5 бандлов, шрифты Bungee/Open Sans, 9 звуков | `public/assets/bubbo`: 16 картинок в одном атласе + 3 звука (`npm run assets:bubbo`), шрифт Nunito |

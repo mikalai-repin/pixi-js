@@ -14,6 +14,7 @@
     "validate": "node scripts/validate-content.mjs && tsc -p tsconfig.content.json",
     "reference": "node scripts/fetch-reference.mjs",
     "assets": "node scripts/build-assets.mjs",
+    "assets:bubbo": "node scripts/build-bubbo-assets.mjs",
     "e2e:dir": "node tools/e2e/run-dir.mjs",
     "e2e:chapter": "node tools/e2e/run-chapter.mjs"
   },

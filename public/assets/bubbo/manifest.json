@@ -1,0 +1,76 @@
+{
+  "bundles": [
+    {
+      "name": "default",
+      "assets": []
+    },
+    {
+      "name": "bubbo",
+      "assets": [
+        {
+          "alias": [
+            "bubbo/bubble-land-sfx.wav",
+            "bubble-land-sfx.wav"
+          ],
+          "src": [
+            "bubbo/bubble-land-sfx-OA_A6g.ogg",
+            "bubbo/bubble-land-sfx-fXQBRg.mp3"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "bubbo/bubbles-falling.wav",
+            "bubbles-falling.wav"
+          ],
+          "src": [
+            "bubbo/bubbles-falling-UVU0.ogg",
+            "bubbo/bubbles-falling-l8rgyg.mp3"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "bubbo/bubbo-atlas",
+            "bubbo-atlas"
+          ],
+          "src": [
+            "bubbo/bubbo-atlas-Xv7jeg.png.json",
+            "bubbo/bubbo-atlas-q7tlxA@0.5x.webp.json",
+            "bubbo/bubbo-atlas-P0pg1w.webp.json",
+            "bubbo/bubbo-atlas-dVHugw@0.5x.png.json"
+          ],
+          "data": {
+            "tags": {
+              "m": true,
+              "tps": true
+            }
+          }
+        },
+        {
+          "alias": [
+            "bubbo/cannon-move.wav",
+            "cannon-move.wav"
+          ],
+          "src": [
+            "bubbo/cannon-move-h_tbjA.mp3",
+            "bubbo/cannon-move-1hTm_Q.ogg"
+          ],
+          "data": {
+            "tags": {
+              "m": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

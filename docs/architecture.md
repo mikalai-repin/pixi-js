@@ -13,7 +13,7 @@
 │  текст, код,        │                          │                     │
 │  врезки             │                          ├─────────────────────┤
 │                     │                          │  консоль / ошибки   │
-│  [Решение] [Далее →]│  [▶ Запустить] [Сброс]   │                     │
+│  [Решение] [Далее →]│  [▶ Запустить] [Сброс] [Скачать] │               │
 └─────────────────────┴──────────────────────────┴─────────────────────┘
 ```
 
@@ -21,6 +21,7 @@
 - Выпадающий список «3 / 8» — навигация по шагам главы; отдельное оглавление — по главам.
 - Кнопка **«Решение»** показывает решение шага в редакторе (с подтверждением, что код ученика будет заменён; код ученика сохраняется, его можно вернуть).
 - Кнопка **«Сброс»** возвращает стартовый код шага.
+- Кнопка **«Скачать»** (с главы 17) собирает ZIP — готовый проект Vite: текущие вкладки в `src/`, `package.json` с библиотеками, которые импортирует код (точные версии курса), `index.html`, `tsconfig.json` (без `erasableSyntaxOnly`), `src/globals.d.ts` (`__PIXI_APP__`), `README.md` и ресурсы: целые папки `public/assets/<папка>`, на которые код ссылается строкой `/assets/<папка>/`, плюс `CREDITS.md`. Код — `src/app/download.ts` и `src/app/zip.ts` (ZIP без сжатия, метод STORE, CRC32); список файлов `public/assets` даёт виртуальный модуль `virtual:asset-list` (плагин в `vite.config.ts`). Проверено: архив главы 16 (3,2 МБ) и шага 17.9 ставятся `npm install`, собираются `npm run build` и запускаются в `vite preview`.
 - Консоль под превью показывает `console.log` и ошибки кода ученика.
 
 ## Стек
@@ -133,6 +134,7 @@ scripts/
   copy-vendor.mjs      — копирует pixi.mjs, pixi-filters.mjs, pixi-sound.mjs, spine-pixi-v8.mjs (+ лицензия Spine) и es-module-lexer и собирает gsap.mjs и pixi-ui.mjs в public/vendor (запускается перед dev/build)
   validate-content.mjs — проверка структуры уроков
   build-assets.mjs     — сборка ресурсов оригинала через AssetPack в public/assets/packed (+ manifest-basic.json, manifest-sound.json, исправление картинок Spine)
+  build-bubbo-assets.mjs — ресурсы Bubbo Bubbo для главы 17 (npm run assets:bubbo): 16 картинок в атлас bubbo-atlas и 3 звука → public/assets/bubbo
   fix-spine-alpha.mjs  — пересобирает картинку дракона из исходника с обычной альфой и ставит pma:false (AssetPack ломает premultiplied alpha)
   fetch-reference.mjs  — скачивание эталона open-games в reference/
 ```

@@ -13,6 +13,13 @@
 (`packed/common/dragon-skeleton-*.{png,webp}`) после сборки пересобраны из исходника скриптом
 `scripts/fix-spine-alpha.mjs`: premultiplied alpha переведена в обычную, в атласах `pma:false`.
 
+## Bubbo Bubbo (`bubbo/`, глава 17)
+
+Картинки и звуки игры **Bubbo Bubbo** (https://github.com/pixijs/open-games/tree/main/bubbo-bubbo),
+папка `raw-assets`, коммит 83b4676. © 2025 PixiJS, автор игры — AshsHub (https://github.com/AshsHub).
+Лицензия MIT. Собраны AssetPack скриптом `scripts/build-bubbo-assets.mjs` (`npm run assets:bubbo`):
+16 картинок — в атлас `bubbo-atlas`, звуки `bubble-land-sfx`, `bubbles-falling`, `cannon-move` — в mp3/ogg.
+
 ## Spine Runtimes
 
 `@esotericsoftware/spine-pixi-v8` (глава 14) © Esoteric Software LLC, лицензия Spine Runtimes License
