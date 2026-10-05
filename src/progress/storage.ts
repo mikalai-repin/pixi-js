@@ -14,6 +14,8 @@ interface Progress {
   steps: Record<string, StepProgress>;
   lastStep?: string;
   autorun?: boolean;
+  /** Свёрнутые панели рабочей области: lesson, code, result */
+  collapsed?: string[];
 }
 
 // localStorage может быть недоступен (приватный режим, запрет сайта) — тогда работаем без сохранения
@@ -62,6 +64,12 @@ export const progress = {
   getAutorun: () => state.autorun ?? true,
   setAutorun: (value: boolean) => {
     state.autorun = value;
+    write();
+  },
+
+  getCollapsed: () => state.collapsed ?? [],
+  setCollapsed: (value: string[]) => {
+    state.collapsed = value;
     write();
   },
 

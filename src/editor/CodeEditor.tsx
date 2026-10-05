@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { formatEditor, modelUri, monaco } from './monaco';
 
 interface Props {
@@ -9,6 +9,8 @@ interface Props {
   onSelect: (file: string) => void;
   onChange: (file: string, code: string) => void;
   onRun: () => void;
+  /** Кнопки справа в шапке редактора, например «свернуть панель» */
+  actions?: ReactNode;
 }
 
 /** Ключ localStorage: открыта ли панель файлов */
@@ -38,7 +40,7 @@ function sortForTree(files: string[]) {
   return [...files].sort((a, b) => (a === 'main.ts' ? -1 : b === 'main.ts' ? 1 : a.localeCompare(b)));
 }
 
-export function CodeEditor({ stepId, files, active, readonly, onSelect, onChange, onRun }: Props) {
+export function CodeEditor({ stepId, files, active, readonly, onSelect, onChange, onRun, actions }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -131,6 +133,7 @@ export function CodeEditor({ stepId, files, active, readonly, onSelect, onChange
             </button>
           ))}
         </div>
+        {actions}
       </div>
       <div className="editor-body">
         {treeOpen && (

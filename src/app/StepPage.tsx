@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Group, Panel, Separator } from 'react-resizable-panels';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { Group, Panel, Separator, usePanelRef, type PanelImperativeHandle } from 'react-resizable-panels';
 import { Navigate, useParams } from 'react-router';
 import { allSteps, findStep, type FileMap, type Step } from '../content/course';
 import { CodeEditor } from '../editor/CodeEditor';
@@ -12,6 +12,12 @@ import { useMediaQuery } from './useMediaQuery';
 
 const AUTORUN_DELAY = 1000;
 const SAVE_DELAY = 300;
+
+type PaneId = 'lesson' | 'code' | 'result';
+
+const PANE_LABELS: Record<PaneId, string> = { lesson: 'Урок', code: 'Код', result: 'Результат' };
+/** Ширина свёрнутой панели — полоска с подписью */
+const COLLAPSED_SIZE = '34px';
 
 export function StepPage() {
   const params = useParams();
@@ -44,10 +50,11 @@ function StepWorkspace({ step }: { step: Step }) {
   const [run, setRun] = useState<PreviewRun | null>(null);
   const [autorun, setAutorun] = useState(progress.getAutorun);
   const [hasBackup, setHasBackup] = useState(() => Boolean(progress.getBackup(step.id)));
-  const [mobileTab, setMobileTab] = useState<'lesson' | 'code' | 'result'>('lesson');
+  const [mobileTab, setMobileTab] = useState<PaneId>('lesson');
   const [downloading, setDownloading] = useState(false);
 
   const timers = useRef<{ save?: number; autorun?: number }>({});
+  const panes = useCollapsiblePanes(!isNarrow, () => runCode());
 
   const index = allSteps.indexOf(step);
   const prev = allSteps[index - 1];
@@ -145,6 +152,7 @@ function StepWorkspace({ step }: { step: Step }) {
       onShowSolution={onShowSolution}
       onRestoreBackup={onRestoreBackup}
       onNext={() => progress.setDone(step.id)}
+      actions={!isNarrow && panes.collapseButton('lesson', '«')}
     />
   );
 
@@ -158,6 +166,7 @@ function StepWorkspace({ step }: { step: Step }) {
         onSelect={setActive}
         onChange={onChange}
         onRun={runCode}
+        actions={!isNarrow && panes.collapseButton('code', '«')}
       />
       <div className="toolbar">
         <button className="button primary" onClick={runCode} title="Ctrl/Cmd + Enter">
@@ -185,7 +194,7 @@ function StepWorkspace({ step }: { step: Step }) {
     </div>
   );
 
-  const preview = <Preview run={run} />;
+  const preview = <Preview run={run} actions={!isNarrow && panes.collapseButton('result', '»')} />;
 
   if (isNarrow) {
     return (
@@ -230,17 +239,99 @@ function StepWorkspace({ step }: { step: Step }) {
 
   return (
     <Group orientation="horizontal" className="workspace">
-      <Panel defaultSize="32%" minSize="20%">
-        {lesson}
+      <Panel {...panes.panelProps('lesson')} defaultSize="32%" minSize="20%">
+        {panes.content('lesson', lesson)}
       </Panel>
       <Separator className="separator" />
-      <Panel defaultSize="36%" minSize="20%">
-        {editor}
+      <Panel {...panes.panelProps('code')} defaultSize="36%" minSize="20%">
+        {panes.content('code', editor)}
       </Panel>
       <Separator className="separator" />
-      <Panel defaultSize="32%" minSize="15%">
-        {preview}
+      <Panel {...panes.panelProps('result')} defaultSize="32%" minSize="15%">
+        {panes.content('result', preview)}
       </Panel>
     </Group>
   );
+}
+
+/**
+ * Сворачивание панелей рабочей области: кнопкой в шапке панели или перетаскиванием разделителя за минимальный размер.
+ * Свёрнутая панель — узкая полоска с подписью; содержимое остаётся смонтированным, чтобы не терять редактор и превью
+ */
+function useCollapsiblePanes(isWide: boolean, onResultExpanded: () => void) {
+  const refs: Record<PaneId, RefObject<PanelImperativeHandle | null>> = {
+    lesson: usePanelRef(),
+    code: usePanelRef(),
+    result: usePanelRef(),
+  };
+  // Панели появляются развёрнутыми; свёрнутые в прошлый раз сворачивает эффект ниже, а sync отмечает их здесь
+  const [collapsed, setCollapsed] = useState<PaneId[]>([]);
+  const collapsedRef = useRef(collapsed);
+
+  // До первой отрисовки: группа к этому моменту уже посчитала раскладку.
+  // Ещё раз — при переходе с узкого экрана: панели создаются заново, развёрнутыми
+  useLayoutEffect(() => {
+    if (!isWide) return;
+    const saved = progress.getCollapsed() as PaneId[];
+    collapsedRef.current = [];
+    setCollapsed([]);
+    // Хотя бы одна панель должна остаться развёрнутой
+    for (const id of saved.slice(0, 2)) refs[id].current?.collapse();
+  }, [isWide]);
+
+  /** Вызывается при каждом изменении размера панели: свернули её или развернули */
+  function sync(id: PaneId) {
+    const isCollapsed = refs[id].current?.isCollapsed() ?? false;
+    const current = collapsedRef.current;
+    if (current.includes(id) === isCollapsed) return;
+    const next = isCollapsed ? [...current, id] : current.filter((pane) => pane !== id);
+    collapsedRef.current = next;
+    setCollapsed(next);
+    progress.setCollapsed(next);
+    // Скрытый iframe имеет нулевой размер: код, который читает app.screen при старте, расставит всё неверно — перезапускаем
+    if (id === 'result' && !isCollapsed) onResultExpanded();
+  }
+
+  return {
+    panelProps: (id: PaneId) => ({
+      id,
+      panelRef: refs[id],
+      collapsible: true,
+      collapsedSize: COLLAPSED_SIZE,
+      onResize: () => sync(id),
+    }),
+
+    content: (id: PaneId, children: ReactNode) => (
+      <>
+        <div className="pane" hidden={collapsed.includes(id)}>
+          {children}
+        </div>
+        {collapsed.includes(id) && (
+          <button
+            className="pane-strip"
+            title={`Развернуть: ${PANE_LABELS[id]}`}
+            onClick={() => refs[id].current?.expand()}
+          >
+            <span className="pane-strip-icon" aria-hidden="true">
+              {id === 'result' ? '«' : '»'}
+            </span>
+            <span className="pane-strip-label">{PANE_LABELS[id]}</span>
+          </button>
+        )}
+      </>
+    ),
+
+    /** Последнюю развёрнутую панель свернуть нельзя — кнопки у неё нет */
+    collapseButton: (id: PaneId, icon: string) =>
+      collapsed.length < 2 && (
+        <button
+          type="button"
+          className="icon-button pane-collapse"
+          title={`Свернуть: ${PANE_LABELS[id]}`}
+          onClick={() => refs[id].current?.collapse()}
+        >
+          {icon}
+        </button>
+      ),
+  };
 }

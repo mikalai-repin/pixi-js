@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { FileMap } from '../content/course';
 import type { Diagnostic } from '../editor/monaco';
 
@@ -26,11 +26,13 @@ interface PreviewMessage {
 interface Props {
   /** Скомпилированный JS; новый объект = новый запуск */
   run: PreviewRun | null;
+  /** Кнопки справа в шапке консоли, например «свернуть панель» */
+  actions?: ReactNode;
 }
 
 let nextEntryId = 1;
 
-export function Preview({ run }: Props) {
+export function Preview({ run, actions }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [entries, setEntries] = useState<ConsoleEntry[]>([]);
 
@@ -74,11 +76,14 @@ export function Preview({ run }: Props) {
       <div className="console">
         <div className="console-header">
           <span>Консоль</span>
-          {entries.length > 0 && (
-            <button className="link-button" onClick={() => setEntries([])}>
-              Очистить
-            </button>
-          )}
+          <div className="console-actions">
+            {entries.length > 0 && (
+              <button className="link-button" onClick={() => setEntries([])}>
+                Очистить
+              </button>
+            )}
+            {actions}
+          </div>
         </div>
         <div className="console-body">
           {entries.length === 0 ? (
