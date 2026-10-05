@@ -18,8 +18,12 @@ mkdirSync(OUT, { recursive: true });
 export const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export function launch() {
-  // swiftshader — программный WebGL: работает в headless без видеокарты
-  return puppeteer.launch({ executablePath: CHROME, headless: 'new', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  // swiftshader — программный WebGL: работает в headless без видеокарты.
+  // GPU=1 — настоящая видеокарта и WebGPU (глава 16: рендереры, замеры); на macOS в headless это Metal
+  const args = process.env.GPU === '1'
+    ? ['--enable-gpu', '--enable-unsafe-webgpu']
+    : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+  return puppeteer.launch({ executablePath: CHROME, headless: 'new', args });
 }
 
 /**

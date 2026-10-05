@@ -46,6 +46,29 @@
 | shader | шейдер | |
 | mesh | меш | |
 | bounds | границы | |
+| GPU | видеокарта (GPU) | «процессор» — всегда CPU |
+| instruction / instruction set | инструкция / набор инструкций (`InstructionSet`) | список действий, из которых рендерер собирает кадр |
+| render pipe | конвейер (render pipe) | часть рендерера, которая умеет рисовать один вид объектов: `sprite`, `graphics`, `batch` |
+| system (renderer) | система (рендерера) | часть рендерера с одной обязанностью: `renderer.texture`, `renderer.filter` |
+| extension | расширение | класс со статическим полем `extension`, регистрируется через `extensions.add` |
+| plugin (application) | плагин (приложения) | расширение типа `Application`, например `CullerPlugin` |
+| stencil buffer | буфер трафарета (stencil) | так работают маски-фигуры |
+| context loss | потеря контекста | браузер забирает у страницы WebGL-контекст |
+| cache as texture | кэширование в текстуру (`cacheAsTexture`) | контейнер рисуется один раз в текстуру |
+| world chunk | кусок (мира) | часть большого мира в лаборатории главы 16; не путать с чанком сборки |
+| minimap | миникарта | |
+| geometry | геометрия | вершины, UV и индексы треугольников |
+| vertex | вершина | |
+| index (buffer) | индекс (индексы треугольников) | номера вершин, по три на треугольник |
+| UV, texture coordinates | UV, текстурные координаты | точка текстуры от 0 до 1 по каждой оси |
+| vertex shader / fragment shader | вершинный шейдер / фрагментный шейдер | |
+| uniform | uniform (параметр шейдера) | одно значение на весь вызов отрисовки |
+| attribute | атрибут (вершины) | своё значение у каждой вершины: `aPosition`, `aUV` |
+| precision (GLSL) | точность (`highp`, `mediump`) | |
+| frame time | время кадра | |
+| profiler | профилировщик | вкладка Performance в DevTools |
+| garbage collector | сборщик мусора | всегда полностью: просто «сборщик» — это Vite и т. п. |
+| texture pool | пул текстур (`TexturePool`) | временные текстуры фильтров и текста |
 
 ## Трансформации и координаты
 
