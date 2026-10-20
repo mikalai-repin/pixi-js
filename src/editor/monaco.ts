@@ -5,6 +5,10 @@ import pixiTypes from '../../node_modules/pixi.js/dist/pixi.js.d.ts?raw';
 import tweedleTypes from '../../node_modules/tweedle.js/index.d.ts?raw';
 import gradientParserTypes from '../../node_modules/@types/gradient-parser/index.d.ts?raw';
 import type { FileMap } from '../content/course';
+// Ядро Shiki всё равно в чанке страницы шага (им подсвечивается текст урока, src/lesson/markdown.ts)
+import { createHighlighterCore } from 'shiki/core';
+import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
+import { courseDark, courseLight } from './course-themes';
 
 // Типы GSAP: набор .d.ts с /// <reference>, внутри — `declare module "gsap"`
 const gsapTypes = import.meta.glob('../../node_modules/gsap/types/**/*.d.ts', {
@@ -132,12 +136,45 @@ monaco.languages.registerDocumentFormattingEditProvider('typescript', {
   },
 });
 
+// ---------- Подсветка: Shiki (грамматики VS Code) ----------
+//
+// Встроенная Monarch-грамматика Monaco различает только ключевые слова, строки и числа: вызовы методов и классы
+// (`app.stage.addChild`, `new Sprite`) у неё одного цвета. Shiki подсвечивает теми же TextMate-грамматиками, что
+// VS Code, и темами курса (src/editor/course-themes.ts) — как код в тексте урока. Пока Shiki не загрузился — vs/vs-dark.
+
+let highlighted = false;
+
 function applyTheme() {
-  const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  monaco.editor.setTheme(dark ? 'vs-dark' : 'vs');
+  // Действующую тему ставит на <html> src/app/theme.ts (и скрипт в index.html до запуска)
+  const dark = document.documentElement.dataset.theme === 'dark';
+  if (highlighted) monaco.editor.setTheme(dark ? courseDark.name! : courseLight.name!);
+  else monaco.editor.setTheme(dark ? 'vs-dark' : 'vs');
 }
 applyTheme();
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, {
+  attributes: true,
+  attributeFilter: ['data-theme'],
+});
+
+async function setupHighlighting() {
+  const [{ shikiToMonaco }, typescript] = await Promise.all([
+    import('@shikijs/monaco'),
+    import('shiki/langs/typescript.mjs'),
+  ]);
+  const highlighter = await createHighlighterCore({
+    themes: [courseLight, courseDark],
+    langs: [typescript.default],
+    engine: createJavaScriptRegexEngine(),
+  });
+  // Встроенные грамматики Monaco подгружаются лениво и при загрузке регистрируются заново — поверх Shiki, если
+  // загрузились позже него. colorize ждёт, пока встроенная грамматика языка загрузится: после этого Shiki — последний
+  await monaco.editor.colorize('', 'typescript', {});
+  // Адаптер типизирован под monaco-editor-core; monaco-editor содержит то же API
+  shikiToMonaco(highlighter, monaco as unknown as Parameters<typeof shikiToMonaco>[1]);
+  highlighted = true;
+  applyTheme();
+}
+setupHighlighting().catch((error) => console.warn('Подсветка Shiki не загрузилась, остаётся встроенная:', error));
 
 export function modelUri(stepId: string, file: string) {
   return monaco.Uri.parse(`file:///steps/${stepId}/${file}`);

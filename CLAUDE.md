@@ -57,6 +57,7 @@ tools/authoring/      — steps.py: запись шагов главы — то�
 - `npm run assets` — пересборка ресурсов через AssetPack в `public/assets/packed` (нужен `reference/`)
 - `node tools/e2e/run-dir.mjs <папка шага>` — запустить код шага в чистом превью: консоль + скриншот в `tools/e2e/out/`
 - `node tools/e2e/run-chapter.mjs <папка главы>` — пройти все шаги главы в интерфейсе платформы с «Решением»
+- `node tools/e2e/checks/platform.mjs` — оформление платформы: тема, палитры, подсветка кода, липкая строка главы, загрузчик
 - `node tools/e2e/checks/ch06-interaction.mjs`, `ch07-logic.mjs`, `ch08-animation.mjs`, `ch09-text.mjs`, `ch10-ui.mjs`, `ch11-screens.mjs`, `ch12-effects.mjs`, `ch13-sound.mjs`, `ch14-spine.mjs`, `ch16-under-the-hood.mjs`, `ch17-final.mjs` — проверки мышью, согласованности игры, анимированных ходов, счёта и таймера, интерфейса и раскладки, экранов и полного цикла игры, эффектов и спецфишек, звука и настроек, Spine, внутренностей рендерера (замеры, WebGPU, память), финального проекта (режим уровней и Bubbo Bubbo)
 - `node tools/e2e/exp.mjs <папка> <сценарий.mjs>` — прогнать эксперимент из текста урока со своим сценарием действий
 - Все проверки требуют запущенного `npm run dev` и Chrome (`CHROME_PATH`, по умолчанию путь macOS). По умолчанию WebGL программный (swiftshader); `GPU=1` — настоящая видеокарта и WebGPU (нужно для замеров главы 16, `ch16-under-the-hood.mjs` включает его сам)

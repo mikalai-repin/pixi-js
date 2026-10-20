@@ -19,6 +19,7 @@
     "e2e:chapter": "node tools/e2e/run-chapter.mjs"
   },
   "dependencies": {
+    "@shikijs/monaco": "^4.5.0",
     "es-module-lexer": "^3.0.2",
     "markdown-it": "^15.0.2",
     "markdown-it-container": "^4.0.0",

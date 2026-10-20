@@ -52,17 +52,24 @@ export function LessonPanel({
   }
 
   const chapter = step.chapter;
+  const [scrolled, setScrolled] = useState(false);
 
   return (
     <div className="lesson">
-      <div className="lesson-scroll" ref={scrollRef}>
-        <header className="lesson-header">
-          <div className="lesson-chapter-row">
-            <div className="lesson-chapter">
-              Глава {chapter.index + 1}. {chapter.title}
-            </div>
-            {actions}
+      <div
+        className={scrolled ? 'lesson-scroll scrolled' : 'lesson-scroll'}
+        ref={scrollRef}
+        // Строка главы прилипает к верху панели; когда текст уезжает под неё — под строкой появляется граница
+        onScroll={(event) => setScrolled(event.currentTarget.scrollTop > 0)}
+      >
+        {/* Липкая строка — прямо в контейнере прокрутки: sticky держится только в пределах родителя */}
+        <div className="lesson-chapter-row">
+          <div className="lesson-chapter">
+            Глава {chapter.index + 1}. {chapter.title}
           </div>
+          {actions}
+        </div>
+        <header className="lesson-header">
           <div className="lesson-title-row">
             <h1>{step.meta.title}</h1>
             <select

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Loader } from '../app/Loader';
 import type { FileMap } from '../content/course';
 import type { Diagnostic } from '../editor/monaco';
 
@@ -70,7 +71,9 @@ export function Preview({ run, actions }: Props) {
         {run ? (
           <iframe key={run.id} ref={iframeRef} src="/preview.html" title="Результат" />
         ) : (
-          <div className="preview-empty">Компилируем…</div>
+          <div className="preview-empty">
+            <Loader label="Компилируем…" compact />
+          </div>
         )}
       </div>
       <div className="console">

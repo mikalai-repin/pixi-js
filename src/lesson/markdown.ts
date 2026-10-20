@@ -3,6 +3,7 @@ import container from 'markdown-it-container';
 import { createHighlighterCore, type HighlighterCore } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
 import { findStepByDir, stepPath } from '../content/course';
+import { courseDark, courseLight } from '../editor/course-themes';
 
 // Подключаем только нужные языки: полный бандл Shiki тянет ~200 грамматик
 const LANGS = ['ts', 'typescript', 'js', 'javascript', 'json', 'html', 'css', 'bash', 'sh', 'glsl'];
@@ -11,7 +12,7 @@ let highlighterPromise: Promise<HighlighterCore> | undefined;
 
 function getHighlighter() {
   highlighterPromise ??= createHighlighterCore({
-    themes: [import('shiki/themes/github-light.mjs'), import('shiki/themes/github-dark.mjs')],
+    themes: [courseLight, courseDark],
     langs: [
       import('shiki/langs/typescript.mjs'),
       import('shiki/langs/javascript.mjs'),
@@ -69,7 +70,7 @@ function createMarkdown(highlighter: HighlighterCore) {
     const html = LANGS.includes(lang)
       ? highlighter.codeToHtml(code, {
           lang,
-          themes: { light: 'github-light', dark: 'github-dark' },
+          themes: { light: courseLight.name!, dark: courseDark.name! },
           defaultColor: false,
           transformers: [
             {

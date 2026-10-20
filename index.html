@@ -11,9 +11,137 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    <!-- Сохранённые палитра и тема — до первой отрисовки, чтобы не мелькали значения по умолчанию.
+         Тема по умолчанию — тёмная (DEFAULT_THEME в src/app/theme.ts) -->
+    <script>
+      let settings = {};
+      try {
+        settings = JSON.parse(localStorage.getItem('pixi-course:v1') || '{}');
+      } catch {
+        // localStorage недоступен — значения по умолчанию
+      }
+      if (settings.palette) document.documentElement.dataset.palette = settings.palette;
+      document.documentElement.dataset.theme = settings.theme === 'light' ? 'light' : 'dark';
+    </script>
+    <!-- Загрузчик до запуска JavaScript: та же разметка, что у Loader в src/app/Loader.tsx.
+         React заменит содержимое #root при первой отрисовке -->
+    <style>
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        background: #f6f5f9;
+        color: #6b6578;
+        font:
+          15px system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        --logo: #d6336c;
+        --logo-bubble: #ffffff;
+      }
+      /* Палитры (src/styles.css, src/app/Appearance.tsx): фон, подпись и цвет колбы.
+         Без data-palette (по умолчанию) — «PixiJS», её светлые цвета — в правиле .boot выше.
+         Оба атрибута — на <html>, поэтому без пробела: [data-theme='dark'][data-palette='…'] */
+      [data-palette='violet'] .boot {
+        background: #f7f6fb;
+        color: #686379;
+        --logo: #6d4fc2;
+      }
+      [data-palette='emerald'] .boot {
+        background: #f5f8f6;
+        color: #5f6d64;
+        --logo: #0f7a55;
+      }
+      [data-palette='azure'] .boot {
+        background: #f6f7f9;
+        color: #5e687e;
+        --logo: #087ea4;
+      }
+      [data-theme='dark'] .boot {
+        background: #14121b;
+        color: #9c96ab;
+        --logo: #f06595;
+        --logo-bubble: #1c1a25;
+      }
+      [data-theme='dark'][data-palette='violet'] .boot {
+        background: #15131c;
+        color: #9d97b0;
+        --logo: #a996ff;
+        --logo-bubble: #1e1b28;
+      }
+      [data-theme='dark'][data-palette='emerald'] .boot {
+        background: #121815;
+        color: #94a59b;
+        --logo: #4fd1a1;
+        --logo-bubble: #1a221e;
+      }
+      [data-theme='dark'][data-palette='azure'] .boot {
+        background: #16181d;
+        color: #99a1b3;
+        --logo: #58c4dc;
+        --logo-bubble: #23272f;
+      }
+      .boot .flask {
+        fill: none;
+        stroke: var(--logo);
+        stroke-width: 1.6;
+        stroke-linejoin: round;
+      }
+      .boot .liquid {
+        fill: var(--logo);
+        opacity: 0.85;
+        animation: boot-slosh 1.8s ease-in-out infinite;
+      }
+      .boot .bubble {
+        fill: var(--logo-bubble);
+      }
+      @keyframes boot-slosh {
+        50% {
+          transform: translateY(1.2px);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot .liquid {
+          animation: none;
+        }
+        .boot .bubble {
+          display: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot" role="status">
+        <svg width="64" height="64" viewBox="0 0 32 32" aria-hidden="true">
+          <clipPath id="boot-flask">
+            <path d="M12 6h8v3h-1v4.2l5.6 8.4A3 3 0 0 1 22.1 26H9.9a3 3 0 0 1-2.5-4.4L13 13.2V9h-1z" />
+          </clipPath>
+          <g clip-path="url(#boot-flask)">
+            <rect class="liquid" x="4" y="17" width="24" height="12" />
+            <circle class="bubble" cx="13.5" cy="25" r="1.1">
+              <animate attributeName="cy" values="25;13" dur="1.8s" begin="0s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0s" repeatCount="indefinite" />
+            </circle>
+            <circle class="bubble" cx="17.5" cy="25" r="0.8">
+              <animate attributeName="cy" values="25;13" dur="1.8s" begin="-0.6s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="-0.6s" repeatCount="indefinite" />
+            </circle>
+            <circle class="bubble" cx="15.8" cy="25" r="1.3">
+              <animate attributeName="cy" values="25;13" dur="1.8s" begin="-1.2s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="-1.2s" repeatCount="indefinite" />
+            </circle>
+          </g>
+          <path class="flask" d="M12 6h8v3h-1v4.2l5.6 8.4A3 3 0 0 1 22.1 26H9.9a3 3 0 0 1-2.5-4.4L13 13.2V9h-1z" />
+        </svg>
+        <span>Загружаем курс…</span>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
